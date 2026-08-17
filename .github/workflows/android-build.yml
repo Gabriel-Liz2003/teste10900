@@ -36,11 +36,11 @@ jobs:
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
           sed -i 's/gridItems(42) { cell ->/gridItems((0 until 42).toList()) { cell ->/' app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt
 
-          # Fetch immutable binary blobs directly by SHA, then verify the exact local patch hash.
+          # Fetch verified binary parts by immutable Git blob SHA.
           for spec in \
-            '15c3810989df4e5750dff1d3ce1746245f7fa43e:/tmp/part.00' \
+            'fb6753f02933e4d43ead30a21290f489881b6414:/tmp/part.00' \
             'fc710d864993d7110b8277f6a4c4a66808947413:/tmp/part.01' \
-            '5d4abdec355116add306d6a6109f4411c9cc8dfb:/tmp/part.02'; do
+            'e123d3d50c93c6654ed741bd6d2a0d71f4b5c6bb:/tmp/part.02'; do
             sha="${spec%%:*}"
             out="${spec#*:}"
             curl -fsSL \
