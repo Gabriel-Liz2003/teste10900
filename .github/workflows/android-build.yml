@@ -20,7 +20,6 @@ jobs:
           rm tests.tar.gz
           test -f settings.gradle.kts
           test -f app/build.gradle.kts
-          test -n "$(find app/src/test -type f -name '*.kt' -print -quit)"
           sed -i 's/androidx.core:core-ktx:1.19.0/androidx.core:core-ktx:1.17.0/' app/build.gradle.kts
           sed -i 's/androidx.compose:compose-bom:2026.08.00/androidx.compose:compose-bom:2025.08.00/' app/build.gradle.kts
           sed -i 's/version "2.2.21"/version "2.4.10"/g' build.gradle.kts
@@ -34,6 +33,17 @@ jobs:
           sed -i '/^[[:space:]]*kotlinOptions {/,/^[[:space:]]*}/d' app/build.gradle.kts
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
           sed -i 's/gridItems(42) { cell ->/gridItems((0 until 42).toList()) { cell ->/' app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt
+
+          # Overlay GameDrop 1.1.0 changes after the legacy CI compatibility fixes.
+          cat ci_patch/patch.* | base64 -d > patch.tar.gz
+          tar -xzf patch.tar.gz
+          rm patch.tar.gz
+
+          test -f app/src/main/java/com/gabriel/gamedrop/core/SynopsisTranslator.kt
+          test -f app/src/main/res/values-en/strings.xml
+          test -f app/src/main/res/xml/locales_config.xml
+          test "$(grep -R --include='*.kt' -h '@Test' app/src/test | wc -l | tr -d ' ')" -eq 14
+          grep -q 'versionName = "1.1.0"' app/build.gradle.kts
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -45,7 +55,7 @@ jobs:
       - name: Install Android SDK 36
         shell: bash
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-      - name: Run JVM tests and build debug APK
+      - name: Run 14 JVM tests and build GameDrop 1.1.0
         shell: bash
         run: |
           set -o pipefail
@@ -54,7 +64,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: GameDrop-build-log
+          name: GameDrop-1.1.0-build-log
           path: build.log
           if-no-files-found: warn
           retention-days: 7
@@ -62,7 +72,7 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: GameDrop-debug-apk
+          name: GameDrop-1.1.0-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
