@@ -29,6 +29,7 @@ jobs:
           sed -i 's/androidx.room:room-testing:2.8.1/androidx.room:room-testing:2.8.4/' app/build.gradle.kts
           sed -i '/^[[:space:]]*kotlinOptions {/,/^[[:space:]]*}/d' app/build.gradle.kts
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
+          sed -i 's/gridItems(42) { cell ->/gridItems((0 until 42).toList()) { cell ->/' app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
