@@ -34,11 +34,12 @@ jobs:
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
           sed -i 's/gridItems(42) { cell ->/gridItems((0 until 42).toList()) { cell ->/' app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt
 
-          # Overlay GameDrop 1.1.0 changes after the legacy CI compatibility fixes.
-          cat ci_patch/patch.* | base64 -d > patch.tar.gz
+          # Overlay corrected GameDrop 1.1.0 source after legacy compatibility fixes.
+          cat ci_patch2/patch.* | base64 -d > patch.tar.gz
           tar -xzf patch.tar.gz
           rm patch.tar.gz
 
+          test -f app/src/main/java/com/gabriel/gamedrop/MainActivity.kt
           test -f app/src/main/java/com/gabriel/gamedrop/core/SynopsisTranslator.kt
           test -f app/src/main/res/values-en/strings.xml
           test -f app/src/main/res/xml/locales_config.xml
