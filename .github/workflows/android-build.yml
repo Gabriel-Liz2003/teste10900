@@ -20,6 +20,13 @@ jobs:
           sed -i 's/androidx.core:core-ktx:1.19.0/androidx.core:core-ktx:1.17.0/' app/build.gradle.kts
           sed -i 's/androidx.compose:compose-bom:2026.08.00/androidx.compose:compose-bom:2025.08.00/' app/build.gradle.kts
           sed -i 's/version "2.2.21"/version "2.4.10"/g' build.gradle.kts
+          sed -i 's/id("org.jetbrains.kotlin.kapt") version "2.4.10" apply false/id("com.google.devtools.ksp") version "2.3.10" apply false/' build.gradle.kts
+          sed -i 's/id("org.jetbrains.kotlin.kapt")/id("com.google.devtools.ksp")/' app/build.gradle.kts
+          sed -i '/^kapt {/,/^}/d' app/build.gradle.kts
+          sed -i 's/androidx.room:room-runtime:2.8.1/androidx.room:room-runtime:2.8.4/' app/build.gradle.kts
+          sed -i 's/androidx.room:room-ktx:2.8.1/androidx.room:room-ktx:2.8.4/' app/build.gradle.kts
+          sed -i 's/kapt("androidx.room:room-compiler:2.8.1")/ksp("androidx.room:room-compiler:2.8.4")/' app/build.gradle.kts
+          sed -i 's/androidx.room:room-testing:2.8.1/androidx.room:room-testing:2.8.4/' app/build.gradle.kts
           sed -i '/^[[:space:]]*kotlinOptions {/,/^[[:space:]]*}/d' app/build.gradle.kts
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
       - uses: actions/setup-java@v4
