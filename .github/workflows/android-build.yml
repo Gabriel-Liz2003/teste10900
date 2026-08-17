@@ -22,6 +22,7 @@ jobs:
           test -f app/build.gradle.kts
           sed -i 's/androidx.core:core-ktx:1.19.0/androidx.core:core-ktx:1.17.0/' app/build.gradle.kts
           sed -i 's/androidx.compose:compose-bom:2026.08.00/androidx.compose:compose-bom:2025.08.00/' app/build.gradle.kts
+          sed -i 's/version "2.2.21"/version "2.4.10"/g' build.gradle.kts
 
       - uses: actions/setup-java@v4
         with:
