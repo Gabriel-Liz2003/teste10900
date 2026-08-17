@@ -1,0 +1,48 @@
+name: Build GameDrop APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [gamedrop-apk-build]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reconstruct GameDrop project
+        shell: bash
+        run: |
+          cat ci_payload/payload.* | base64 -d > project.tar.gz
+          tar -xzf project.tar.gz
+          rm project.tar.gz
+          test -f settings.gradle.kts
+          test -f app/build.gradle.kts
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 36
+        shell: bash
+        run: yes | sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" >/dev/null
+
+      - name: Build debug APK
+        run: gradle assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: GameDrop-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
