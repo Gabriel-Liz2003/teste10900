@@ -59,10 +59,6 @@ def query_ids(token, endpoint, ids, fields):
     return rows
 
 
-def query_all(token, endpoint, fields):
-    return igdb(token, endpoint, f"fields {fields}; limit 500;")
-
-
 def image_url(image_id, size="cover_big"):
     if not image_id:
         return None
@@ -98,12 +94,12 @@ def classify_video(name):
 
 
 def fetch_release_dates(token, start_timestamp, end_timestamp):
-    """Query in 45-day windows so busy months cannot silently hit the API limit."""
+    """Use short windows so no busy period can hit IGDB's 5k offset ceiling."""
     rows = {}
     cursor = datetime.fromtimestamp(start_timestamp, tz=timezone.utc)
     end_dt = datetime.fromtimestamp(end_timestamp, tz=timezone.utc)
     while cursor < end_dt:
-        window_end = min(cursor + timedelta(days=45), end_dt)
+        window_end = min(cursor + timedelta(days=7), end_dt)
         left, right = int(cursor.timestamp()), int(window_end.timestamp())
         offset = 0
         while True:
@@ -119,13 +115,17 @@ def fetch_release_dates(token, start_timestamp, end_timestamp):
                 break
             offset += 500
             if offset >= 5000:
-                raise RuntimeError(f"release_dates window exceeded safe pagination limit: {cursor.date()}")
+                raise RuntimeError(f"7-day release window still exceeded IGDB offset limit: {cursor.date()}")
         cursor = window_end
     return sorted(rows.values(), key=lambda row: (row.get("date") or 0, row.get("id") or 0))
 
 
 def normalize_name(value):
     return re.sub(r"\s+", " ", (value or "").strip())
+
+
+def normalized_key(value):
+    return re.sub(r"[^a-z0-9]+", "_", (value or "").lower()).strip("_")
 
 
 def primary_release(releases, region_by_id):
@@ -218,21 +218,21 @@ def main():
         dates_by_game[row["game"]].append(row)
 
     allowed_types = {
-        None,
-        "Main Game",
-        "DLC Addon",
-        "Expansion",
-        "Standalone Expansion",
-        "Remake",
-        "Remaster",
-        "Expanded Game",
-        "Port",
+        "",
+        "main_game",
+        "dlc_addon",
+        "expansion",
+        "standalone_expansion",
+        "remake",
+        "remaster",
+        "expanded_game",
+        "port",
     }
 
     output_games = []
     for game in games:
         game_type = game_type_by_id.get(game.get("game_type"))
-        if game_type not in allowed_types:
+        if normalized_key(game_type) not in allowed_types:
             continue
         raw_dates = dates_by_game.get(game["id"], [])
         if not raw_dates:
