@@ -19,6 +19,17 @@ Configure em **Settings → Secrets and variables → Actions → Repository sec
 
 O workflow reconstrói o keystore apenas no diretório temporário do runner e não imprime os valores nos logs.
 
+**Status em 18/08/2026:** os quatro Repository Secrets foram cadastrados pelo proprietário. A validação final é feita exclusivamente pelo pipeline oficial, que só publica o APK se conseguir reconstruir o keystore e verificar o certificado esperado.
+
+## Como gerar uma build oficial
+
+O workflow `Build GameDrop APK` pode gerar a build oficial de duas formas, sempre no ref `gamedrop-apk-build`:
+
+1. por um `push` relacionado ao desenvolvimento nessa branch; ou
+2. manualmente em **Actions → Build GameDrop APK → Run workflow**, selecionando `gamedrop-apk-build`.
+
+Executar o workflow em outro ref não libera a etapa de assinatura oficial.
+
 ## Validação antes de distribuir
 
 O pipeline de release deve:
