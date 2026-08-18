@@ -12,6 +12,7 @@ interface ReleaseFeedRepository {
     suspend fun games(start: LocalDate, end: LocalDate, force: Boolean = false): List<IgdbReleaseGame>
     suspend fun gameByIgdbId(igdbId: Int, force: Boolean = false): IgdbReleaseGame?
     suspend fun trailersForGameId(gameId: Int): List<IgdbTrailer>
+    suspend fun popularityScores(force: Boolean = false): Map<Int, Double>
 }
 
 class ReleaseFeedRepositoryImpl(
@@ -44,12 +45,24 @@ class ReleaseFeedRepositoryImpl(
         return gameByIgdbId(IgdbGameIds.decode(gameId))?.trailers.orEmpty()
     }
 
+    override suspend fun popularityScores(force: Boolean): Map<Int, Double> = withContext(Dispatchers.IO) {
+        loadPopularity(force).games.mapNotNull { (id, value) -> id.toIntOrNull()?.let { it to value.score } }.toMap()
+    }
+
     private suspend fun loadIndex(force: Boolean): ReleaseIndex {
         val file = File(cacheDir, "index.json")
         if (!force) readFresh(file, ReleaseIndex::class.java)?.let { return it }
         return runCatching { api.getIndex() }
             .onSuccess { write(file, it) }
             .getOrElse { read(file, ReleaseIndex::class.java) ?: throw it }
+    }
+
+    private suspend fun loadPopularity(force: Boolean): ReleasePopularityFeed {
+        val file = File(cacheDir, "popularity.json")
+        if (!force) readFresh(file, ReleasePopularityFeed::class.java)?.let { return it }
+        return runCatching { api.getPopularity() }
+            .onSuccess { write(file, it) }
+            .getOrElse { read(file, ReleasePopularityFeed::class.java) ?: ReleasePopularityFeed() }
     }
 
     private suspend fun loadMonth(month: YearMonth, force: Boolean): ReleaseMonthFeed {
