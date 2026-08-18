@@ -45,7 +45,7 @@ jobs:
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
           sed -i 's/gridItems(42) { cell ->/gridItems((0 until 42).toList()) { cell ->/' app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt
 
-          # Reconstruct the validated GameDrop 1.1.0 overlay.
+          # Reconstruct the validated legacy overlay.
           for spec in \
             'fb6753f02933e4d43ead30a21290f489881b6414:/tmp/part.00' \
             'fc710d864993d7110b8277f6a4c4a66808947413:/tmp/part.01' \
@@ -64,8 +64,38 @@ jobs:
           tar -xzf patch.tar.gz
           rm patch.tar.gz /tmp/part.00 /tmp/part.01 /tmp/part.02
 
-          # Restore the tracked 1.3+ layer after the legacy payload.
-          if git cat-file -e HEAD:app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt 2>/dev/null; then
+          # Restore the tracked 1.4 layer after the legacy payload.
+          if git cat-file -e HEAD:app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedModels.kt 2>/dev/null; then
+            git checkout HEAD -- \
+              app/build.gradle.kts \
+              app/src/main/java/com/gabriel/gamedrop/AppContainer.kt \
+              app/src/main/java/com/gabriel/gamedrop/core/SynopsisTranslator.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/GameDropNav.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventModels.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventFeedApi.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventRepository.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventTimeUtils.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedModels.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedApi.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedRepository.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/remote/HybridGameRemoteDataSource.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/detail/DetailScreen.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/detail/DetailViewModel.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsViewModel.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt \
+              app/src/main/java/com/gabriel/gamedrop/events/EventNotificationCoordinator.kt \
+              app/src/main/res/values/strings.xml \
+              app/src/main/res/values-en/strings.xml \
+              app/src/main/res/values/events_notifications.xml \
+              app/src/main/res/values-en/events_notifications.xml \
+              app/src/debug/AndroidManifest.xml \
+              app/src/release/AndroidManifest.xml \
+              app/src/test/java/com/gabriel/gamedrop/data/events/EventTimeUtilsTest.kt \
+              app/src/test/java/com/gabriel/gamedrop/data/releases/ReleaseFeedUtilsTest.kt
+            EXPECTED_TESTS=21
+            EXPECTED_VERSION=1.4.0
+            EXPECTED_CODE=5
+          elif git cat-file -e HEAD:app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt 2>/dev/null; then
             git checkout HEAD -- \
               app/build.gradle.kts \
               app/src/main/java/com/gabriel/gamedrop/AppContainer.kt \
