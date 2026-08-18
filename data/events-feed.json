@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-18T20:58:44.263149Z",
+  "generatedAt": "2026-08-18T20:59:56.891535Z",
   "source": "GameDrop aggregator: official public sources + IGDB when configured",
   "sourcesStatus": [
     "Summer Game Fest:18",
@@ -299,5 +299,9 @@
       "games": [],
       "videos": []
     }
+  ],
+  "sourcesStatusMajor": [
+    "gamescom:0",
+    "The Game Awards:0"
   ]
 }
