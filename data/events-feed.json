@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "generatedAt": "2026-08-18T21:32:43.861924Z",
+  "generatedAt": "2026-08-18T21:37:37.898075Z",
   "source": "GameDrop aggregator: official public sources + IGDB enrichment",
   "sourcesStatus": [
     "Summer Game Fest:18",
@@ -1015,18 +1015,6 @@
           "youtubeVideoId": "TvIZkci9hks"
         },
         {
-          "id": 123427,
-          "gameId": 314280,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "TvIZkci9hks"
-        },
-        {
-          "id": 123429,
-          "gameId": 314279,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "TvIZkci9hks"
-        },
-        {
           "id": 123366,
           "gameId": 225987,
           "name": "Trailer",
@@ -2026,12 +2014,6 @@
         {
           "id": 123607,
           "gameId": 314391,
-          "name": "Trailer",
-          "youtubeVideoId": "dKK2vJNi0cc"
-        },
-        {
-          "id": 123606,
-          "gameId": 314390,
           "name": "Trailer",
           "youtubeVideoId": "dKK2vJNi0cc"
         },
@@ -3487,18 +3469,6 @@
           "youtubeVideoId": "s7pcsAAf_-o"
         },
         {
-          "id": 123684,
-          "gameId": 314434,
-          "name": "Gameplay Video",
-          "youtubeVideoId": "s7pcsAAf_-o"
-        },
-        {
-          "id": 123686,
-          "gameId": 285021,
-          "name": "Trailer",
-          "youtubeVideoId": "s7pcsAAf_-o"
-        },
-        {
           "id": 115940,
           "gameId": 305108,
           "name": "Trailer",
@@ -3565,30 +3535,6 @@
           "youtubeVideoId": "p-_-D8ELLwM"
         },
         {
-          "id": 123698,
-          "gameId": 266610,
-          "name": "Gameplay Video",
-          "youtubeVideoId": "p-_-D8ELLwM"
-        },
-        {
-          "id": 123695,
-          "gameId": 270963,
-          "name": "Gameplay Video",
-          "youtubeVideoId": "p-_-D8ELLwM"
-        },
-        {
-          "id": 123696,
-          "gameId": 228516,
-          "name": "Trailer",
-          "youtubeVideoId": "p-_-D8ELLwM"
-        },
-        {
-          "id": 123697,
-          "gameId": 249480,
-          "name": "Gameplay Video",
-          "youtubeVideoId": "p-_-D8ELLwM"
-        },
-        {
           "id": 123699,
           "gameId": 296381,
           "name": "Release Date Trailer",
@@ -3633,24 +3579,6 @@
         {
           "id": 123723,
           "gameId": 266021,
-          "name": "Dev Diary",
-          "youtubeVideoId": "zDVW72-cQIA"
-        },
-        {
-          "id": 123724,
-          "gameId": 125711,
-          "name": "Dev Diary",
-          "youtubeVideoId": "zDVW72-cQIA"
-        },
-        {
-          "id": 123725,
-          "gameId": 302983,
-          "name": "Dev Diary",
-          "youtubeVideoId": "zDVW72-cQIA"
-        },
-        {
-          "id": 123726,
-          "gameId": 260268,
           "name": "Dev Diary",
           "youtubeVideoId": "zDVW72-cQIA"
         },
@@ -6710,12 +6638,6 @@
           "gameId": 315726,
           "name": "Trailer",
           "youtubeVideoId": "iG6wPZMmWDE"
-        },
-        {
-          "id": 125452,
-          "gameId": 307337,
-          "name": "Trailer",
-          "youtubeVideoId": "aVSNXbwhGDw"
         },
         {
           "id": 125472,
@@ -18744,26 +18666,8 @@
           "youtubeVideoId": "0dBFTdDuBrw"
         },
         {
-          "id": 128177,
-          "gameId": 268948,
-          "name": "Trailer",
-          "youtubeVideoId": "0dBFTdDuBrw"
-        },
-        {
-          "id": 128167,
-          "gameId": 290777,
-          "name": "Trailer",
-          "youtubeVideoId": "0dBFTdDuBrw"
-        },
-        {
           "id": 128155,
           "gameId": 208570,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "nCnvNCV4Nrc"
-        },
-        {
-          "id": 128154,
-          "gameId": 236192,
           "name": "Gameplay Trailer",
           "youtubeVideoId": "nCnvNCV4Nrc"
         },
@@ -22507,12 +22411,6 @@
         {
           "id": 132129,
           "gameId": 313490,
-          "name": "Trailer",
-          "youtubeVideoId": "UNFvz1TfmX8"
-        },
-        {
-          "id": 132128,
-          "gameId": 313489,
           "name": "Trailer",
           "youtubeVideoId": "UNFvz1TfmX8"
         },
@@ -53830,12 +53728,6 @@
           "youtubeVideoId": "5OT2IRriBbQ"
         },
         {
-          "id": 143403,
-          "gameId": 325353,
-          "name": "Trailer",
-          "youtubeVideoId": "5OT2IRriBbQ"
-        },
-        {
           "id": 143405,
           "gameId": 127563,
           "name": "Release Date Trailer",
@@ -56611,18 +56503,6 @@
           "youtubeVideoId": "X10dUltD8Eo"
         },
         {
-          "id": 144445,
-          "gameId": 203388,
-          "name": "Trailer",
-          "youtubeVideoId": "X10dUltD8Eo"
-        },
-        {
-          "id": 144443,
-          "gameId": 203331,
-          "name": "Trailer",
-          "youtubeVideoId": "X10dUltD8Eo"
-        },
-        {
           "id": 144441,
           "gameId": 294870,
           "name": "Launch Trailer",
@@ -56655,12 +56535,6 @@
         {
           "id": 144434,
           "gameId": 337029,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "xDijdPUKFfI"
-        },
-        {
-          "id": 144432,
-          "gameId": 337028,
           "name": "Announcement Trailer",
           "youtubeVideoId": "xDijdPUKFfI"
         },
@@ -58112,12 +57986,6 @@
         {
           "id": 145023,
           "gameId": 338073,
-          "name": "Trailer",
-          "youtubeVideoId": "dmDD7JSfhcE"
-        },
-        {
-          "id": 145022,
-          "gameId": 338072,
           "name": "Trailer",
           "youtubeVideoId": "dmDD7JSfhcE"
         },
@@ -64103,12 +63971,6 @@
           "youtubeVideoId": "7jFI-wKrqpw"
         },
         {
-          "id": 158263,
-          "gameId": 359916,
-          "name": "Trailer",
-          "youtubeVideoId": "7jFI-wKrqpw"
-        },
-        {
           "id": 158440,
           "gameId": 360195,
           "name": "Teaser",
@@ -69996,12 +69858,6 @@
           "youtubeVideoId": "KiAW6CHhT8Y"
         },
         {
-          "id": 152294,
-          "gameId": 346808,
-          "name": "Trailer",
-          "youtubeVideoId": "KiAW6CHhT8Y"
-        },
-        {
           "id": 152293,
           "gameId": 346807,
           "name": "Trailer",
@@ -70010,12 +69866,6 @@
         {
           "id": 152289,
           "gameId": 346806,
-          "name": "Trailer",
-          "youtubeVideoId": "jwxfmaSwTqM"
-        },
-        {
-          "id": 152288,
-          "gameId": 346805,
           "name": "Trailer",
           "youtubeVideoId": "jwxfmaSwTqM"
         },
@@ -72432,18 +72282,6 @@
         {
           "id": 152004,
           "gameId": 251059,
-          "name": "Trailer",
-          "youtubeVideoId": "b2IG-SQ7HOY"
-        },
-        {
-          "id": 152006,
-          "gameId": 265827,
-          "name": "Trailer",
-          "youtubeVideoId": "b2IG-SQ7HOY"
-        },
-        {
-          "id": 152005,
-          "gameId": 305012,
           "name": "Trailer",
           "youtubeVideoId": "b2IG-SQ7HOY"
         },
@@ -77272,32 +77110,8 @@
           "youtubeVideoId": "QnanTqX19c8"
         },
         {
-          "id": 152745,
-          "gameId": 271917,
-          "name": "Trailer",
-          "youtubeVideoId": "QnanTqX19c8"
-        },
-        {
           "id": 152743,
           "gameId": 347151,
-          "name": "Trailer",
-          "youtubeVideoId": "f8DPkgYpKU8"
-        },
-        {
-          "id": 152737,
-          "gameId": 347150,
-          "name": "Trailer",
-          "youtubeVideoId": "f8DPkgYpKU8"
-        },
-        {
-          "id": 152736,
-          "gameId": 347149,
-          "name": "Trailer",
-          "youtubeVideoId": "f8DPkgYpKU8"
-        },
-        {
-          "id": 152733,
-          "gameId": 347148,
           "name": "Trailer",
           "youtubeVideoId": "f8DPkgYpKU8"
         },
@@ -94877,12 +94691,6 @@
           "youtubeVideoId": "OQ0lXep7yCY"
         },
         {
-          "id": 155781,
-          "gameId": 354318,
-          "name": "Trailer",
-          "youtubeVideoId": "OQ0lXep7yCY"
-        },
-        {
           "id": 155783,
           "gameId": 347893,
           "name": "Trailer",
@@ -100805,12 +100613,6 @@
           "youtubeVideoId": "FnMbL1iVggc"
         },
         {
-          "id": 156814,
-          "gameId": 191931,
-          "name": "Trailer",
-          "youtubeVideoId": "FnMbL1iVggc"
-        },
-        {
           "id": 156812,
           "gameId": 356551,
           "name": "Trailer",
@@ -102447,12 +102249,6 @@
           "youtubeVideoId": "dbpu2wRpiB0"
         },
         {
-          "id": 157470,
-          "gameId": 313077,
-          "name": "Trailer",
-          "youtubeVideoId": "Om3HoAgmSTs"
-        },
-        {
           "id": 157400,
           "gameId": 357447,
           "name": "Trailer",
@@ -103283,12 +103079,6 @@
           "youtubeVideoId": "fhdP1siwpsA"
         },
         {
-          "id": 157664,
-          "gameId": 55090,
-          "name": "Trailer",
-          "youtubeVideoId": "fhdP1siwpsA"
-        },
-        {
           "id": 157663,
           "gameId": 320137,
           "name": "Trailer",
@@ -103680,18 +103470,6 @@
         {
           "id": 157801,
           "gameId": 358766,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "XpqfRsJ_--A"
-        },
-        {
-          "id": 157803,
-          "gameId": 270397,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "XpqfRsJ_--A"
-        },
-        {
-          "id": 157805,
-          "gameId": 260799,
           "name": "Announcement Trailer",
           "youtubeVideoId": "XpqfRsJ_--A"
         },
@@ -104930,18 +104708,6 @@
           "id": 158827,
           "gameId": 360782,
           "name": "Announcement Trailer",
-          "youtubeVideoId": "SAd00WKBQEo"
-        },
-        {
-          "id": 158829,
-          "gameId": 360781,
-          "name": "Trailer",
-          "youtubeVideoId": "SAd00WKBQEo"
-        },
-        {
-          "id": 158830,
-          "gameId": 360780,
-          "name": "Trailer",
           "youtubeVideoId": "SAd00WKBQEo"
         },
         {
@@ -106207,12 +105973,6 @@
           "youtubeVideoId": "FM08YoziYJs"
         },
         {
-          "id": 159548,
-          "gameId": 317627,
-          "name": "Trailer",
-          "youtubeVideoId": "FM08YoziYJs"
-        },
-        {
           "id": 159562,
           "gameId": 361890,
           "name": "Announcement Trailer",
@@ -106245,12 +106005,6 @@
         {
           "id": 159576,
           "gameId": 361886,
-          "name": "Trailer",
-          "youtubeVideoId": "f9lffIAztko"
-        },
-        {
-          "id": 159577,
-          "gameId": 221950,
           "name": "Trailer",
           "youtubeVideoId": "f9lffIAztko"
         },
@@ -107478,12 +107232,6 @@
           "youtubeVideoId": "I8hkGMmVVmw"
         },
         {
-          "id": 159708,
-          "gameId": 362058,
-          "name": "Trailer",
-          "youtubeVideoId": "I8hkGMmVVmw"
-        },
-        {
           "id": 159705,
           "gameId": 7291,
           "name": "Trailer",
@@ -107544,22 +107292,10 @@
           "youtubeVideoId": "vNItfx-eILU"
         },
         {
-          "id": 159704,
-          "gameId": 362056,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "XIDRaXoG9Cs"
-        },
-        {
           "id": 159713,
           "gameId": 362059,
           "name": "Announcement Trailer",
           "youtubeVideoId": "Xu-BOJ8dk0E"
-        },
-        {
-          "id": 159708,
-          "gameId": 362058,
-          "name": "Trailer",
-          "youtubeVideoId": "I8hkGMmVVmw"
         }
       ]
     },
@@ -109019,12 +108755,6 @@
         {
           "id": 159799,
           "gameId": 9667,
-          "name": "Trailer",
-          "youtubeVideoId": "cglbQh54PqI"
-        },
-        {
-          "id": 159798,
-          "gameId": 3070,
           "name": "Trailer",
           "youtubeVideoId": "cglbQh54PqI"
         },
@@ -120353,21 +120083,6 @@
           "videos": []
         },
         {
-          "igdbId": 244971,
-          "name": "Oneway.exe",
-          "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co8zag.jpg",
-          "summary": "oneway.exe is a first-person, single player horror game, with a heavy focus on story and internet culture. Explore, survive and solve puzzles to find out what happened to UNTITLED.EXE, its developers, and understand why you're in the middle of it.\n\nFace the internet horrors that haunt your past. The one's you've never heard of. They don't exist.",
-          "highlightType": "TRAILER",
-          "videos": [
-            {
-              "id": 162630,
-              "gameId": 244971,
-              "name": "Trailer",
-              "youtubeVideoId": "gpQVIXUfT7c"
-            }
-          ]
-        },
-        {
           "igdbId": 329493,
           "name": "Everspace 2: Wrath of the Ancients",
           "coverUrl": "https://images.igdb.com/igdb/image/upload/t_cover_big/co9brh.jpg",
@@ -127985,18 +127700,6 @@
           "youtubeVideoId": "KaFPYrLWAds"
         },
         {
-          "id": 163272,
-          "gameId": 287848,
-          "name": "Trailer",
-          "youtubeVideoId": "KaFPYrLWAds"
-        },
-        {
-          "id": 163271,
-          "gameId": 358525,
-          "name": "Trailer",
-          "youtubeVideoId": "KaFPYrLWAds"
-        },
-        {
           "id": 163270,
           "gameId": 348202,
           "name": "Trailer",
@@ -128991,12 +128694,6 @@
         {
           "id": 163788,
           "gameId": 370724,
-          "name": "Trailer",
-          "youtubeVideoId": "y3rcby0zHVM"
-        },
-        {
-          "id": 163805,
-          "gameId": 272600,
           "name": "Trailer",
           "youtubeVideoId": "y3rcby0zHVM"
         },
@@ -133907,12 +133604,6 @@
           "gameId": 251843,
           "name": "Launch Trailer",
           "youtubeVideoId": "8WReuBEqdxY"
-        },
-        {
-          "id": 166013,
-          "gameId": 238474,
-          "name": "Trailer",
-          "youtubeVideoId": "NzJExSCV86o"
         }
       ]
     },
@@ -137887,12 +137578,6 @@
           "youtubeVideoId": "-T4UwgDnQjs"
         },
         {
-          "id": 168698,
-          "gameId": 338902,
-          "name": "Launch Trailer",
-          "youtubeVideoId": "-T4UwgDnQjs"
-        },
-        {
           "id": 168701,
           "gameId": 378231,
           "name": "Announcement Trailer",
@@ -137950,12 +137635,6 @@
           "id": 168681,
           "gameId": 325582,
           "name": "Release Date Trailer",
-          "youtubeVideoId": "PFbcVdZRKwE"
-        },
-        {
-          "id": 168690,
-          "gameId": 203722,
-          "name": "Launch Trailer",
           "youtubeVideoId": "PFbcVdZRKwE"
         },
         {
@@ -159380,30 +159059,6 @@
           "youtubeVideoId": "5DOKyJJV8rQ"
         },
         {
-          "id": 175346,
-          "gameId": 388446,
-          "name": "Trailer",
-          "youtubeVideoId": "5DOKyJJV8rQ"
-        },
-        {
-          "id": 175345,
-          "gameId": 388445,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "5DOKyJJV8rQ"
-        },
-        {
-          "id": 175344,
-          "gameId": 388444,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "5DOKyJJV8rQ"
-        },
-        {
-          "id": 175342,
-          "gameId": 388443,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "5DOKyJJV8rQ"
-        },
-        {
           "id": 175341,
           "gameId": 358525,
           "name": "Trailer",
@@ -164543,12 +164198,6 @@
           "youtubeVideoId": "L1DGtXZreAw"
         },
         {
-          "id": 177333,
-          "gameId": 1516,
-          "name": "Launch Trailer",
-          "youtubeVideoId": "L1DGtXZreAw"
-        },
-        {
           "id": 177331,
           "gameId": 333568,
           "name": "Trailer",
@@ -164569,12 +164218,6 @@
         {
           "id": 177329,
           "gameId": 393105,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "38XHXMdDegg"
-        },
-        {
-          "id": 177327,
-          "gameId": 393104,
           "name": "Announcement Trailer",
           "youtubeVideoId": "38XHXMdDegg"
         },
@@ -167329,36 +166972,6 @@
           "youtubeVideoId": "JgJkMEZ4dCk"
         },
         {
-          "id": 177599,
-          "gameId": 278600,
-          "name": "Sizzle Reel",
-          "youtubeVideoId": "JgJkMEZ4dCk"
-        },
-        {
-          "id": 177597,
-          "gameId": 325182,
-          "name": "Sizzle Reel",
-          "youtubeVideoId": "JgJkMEZ4dCk"
-        },
-        {
-          "id": 177595,
-          "gameId": 294592,
-          "name": "Sizzle Reel",
-          "youtubeVideoId": "JgJkMEZ4dCk"
-        },
-        {
-          "id": 177594,
-          "gameId": 286869,
-          "name": "Sizzle Reel",
-          "youtubeVideoId": "JgJkMEZ4dCk"
-        },
-        {
-          "id": 177593,
-          "gameId": 259339,
-          "name": "Sizzle Reel",
-          "youtubeVideoId": "JgJkMEZ4dCk"
-        },
-        {
           "id": 177591,
           "gameId": 149657,
           "name": "Launch Trailer",
@@ -169093,12 +168706,6 @@
         {
           "id": 177815,
           "gameId": 57692,
-          "name": "Launch Trailer",
-          "youtubeVideoId": "akQZ2CY-lto"
-        },
-        {
-          "id": 177816,
-          "gameId": 204722,
           "name": "Launch Trailer",
           "youtubeVideoId": "akQZ2CY-lto"
         },
@@ -172618,12 +172225,6 @@
           "gameId": 395032,
           "name": "Announcement Trailer",
           "youtubeVideoId": "r2wkXZx0uG4"
-        },
-        {
-          "id": 178897,
-          "gameId": 395035,
-          "name": "Trailer",
-          "youtubeVideoId": "ImvXkhtYNGw"
         }
       ]
     },
@@ -177190,12 +176791,6 @@
           "youtubeVideoId": "hbH1KMm1SVc"
         },
         {
-          "id": 181375,
-          "gameId": 352990,
-          "name": "Teaser",
-          "youtubeVideoId": "RD4SdJIBNLQ"
-        },
-        {
           "id": 181377,
           "gameId": 310733,
           "name": "Gameplay Trailer",
@@ -177260,294 +176855,12 @@
           "gameId": 348339,
           "name": "Trailer",
           "youtubeVideoId": "-AVsW7RCD-0"
-        },
-        {
-          "id": 181388,
-          "gameId": 252828,
-          "name": "Trailer",
-          "youtubeVideoId": "kvldP1kG2Ms"
-        },
-        {
-          "id": 181389,
-          "gameId": 361890,
-          "name": "Trailer",
-          "youtubeVideoId": "1krluWN7gYo"
-        },
-        {
-          "id": 181390,
-          "gameId": 188789,
-          "name": "Release Date Trailer",
-          "youtubeVideoId": "MV6mqeKgqUc"
-        },
-        {
-          "id": 181391,
-          "gameId": 391848,
-          "name": "Release Date Trailer",
-          "youtubeVideoId": "3Z91N8pXQ_A"
-        },
-        {
-          "id": 181392,
-          "gameId": 398525,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "k77SsSaIszY"
-        },
-        {
-          "id": 181393,
-          "gameId": 380416,
-          "name": "Trailer",
-          "youtubeVideoId": "5BvA7ZJBhcU"
-        },
-        {
-          "id": 181394,
-          "gameId": 140375,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "Ddf5ZRLjfcU"
-        },
-        {
-          "id": 181395,
-          "gameId": 380485,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "n3bRW4_aMlo"
-        },
-        {
-          "id": 181397,
-          "gameId": 265820,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "7fyjKp5lCzM"
-        },
-        {
-          "id": 181398,
-          "gameId": 187096,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "DqIlddD4ung"
-        },
-        {
-          "id": 181399,
-          "gameId": 79824,
-          "name": "Trailer",
-          "youtubeVideoId": "XvLBaad4hsc"
-        },
-        {
-          "id": 181400,
-          "gameId": 335487,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "QIeAnXkMG9g"
-        },
-        {
-          "id": 181401,
-          "gameId": 386249,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "WyolQQvuz4g"
-        },
-        {
-          "id": 181402,
-          "gameId": 337778,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "xSysDWAPa44"
-        },
-        {
-          "id": 181403,
-          "gameId": 380417,
-          "name": "Trailer",
-          "youtubeVideoId": "wVQrWmhiT60"
-        },
-        {
-          "id": 181404,
-          "gameId": 349984,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "g55Zpigvyio"
-        },
-        {
-          "id": 181405,
-          "gameId": 212175,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "bWv7IA3okSs"
-        },
-        {
-          "id": 181406,
-          "gameId": 116194,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "xsRmMwABN6E"
-        },
-        {
-          "id": 181408,
-          "gameId": 249016,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "hK-NqsLYN3g"
-        },
-        {
-          "id": 181409,
-          "gameId": 393932,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "JXZUqTlirQM"
-        },
-        {
-          "id": 181410,
-          "gameId": 132516,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "4025B6UAe78"
         },
         {
           "id": 181359,
           "gameId": 355102,
           "name": "Trailer",
           "youtubeVideoId": "WQfw58KG6b8"
-        },
-        {
-          "id": 181379,
-          "gameId": 324574,
-          "name": "Trailer",
-          "youtubeVideoId": "4YLnUv-xZ5s"
-        },
-        {
-          "id": 181387,
-          "gameId": 348339,
-          "name": "Trailer",
-          "youtubeVideoId": "-AVsW7RCD-0"
-        },
-        {
-          "id": 181386,
-          "gameId": 201539,
-          "name": "Trailer",
-          "youtubeVideoId": "yYe607lq_nQ"
-        },
-        {
-          "id": 181385,
-          "gameId": 339820,
-          "name": "Release Date Trailer",
-          "youtubeVideoId": "FRXmBMfG1a4"
-        },
-        {
-          "id": 181384,
-          "gameId": 380420,
-          "name": "Release Date Trailer",
-          "youtubeVideoId": "qA_ePpkEZS8"
-        },
-        {
-          "id": 181383,
-          "gameId": 398521,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "w5VYOaZ7QKQ"
-        },
-        {
-          "id": 181381,
-          "gameId": 398523,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "0Txi4zatq6Q"
-        },
-        {
-          "id": 181382,
-          "gameId": 339609,
-          "name": "Trailer",
-          "youtubeVideoId": "Ti2WgeoxGek"
-        },
-        {
-          "id": 181378,
-          "gameId": 387607,
-          "name": "Trailer",
-          "youtubeVideoId": "jVs6ag1XfTw"
-        },
-        {
-          "id": 181377,
-          "gameId": 310733,
-          "name": "Gameplay Trailer",
-          "youtubeVideoId": "iwtkN45g4IY"
-        },
-        {
-          "id": 181375,
-          "gameId": 352990,
-          "name": "Teaser",
-          "youtubeVideoId": "RD4SdJIBNLQ"
-        },
-        {
-          "id": 181372,
-          "gameId": 398528,
-          "name": "Trailer",
-          "youtubeVideoId": "hbH1KMm1SVc"
-        },
-        {
-          "id": 181373,
-          "gameId": 216314,
-          "name": "Teaser",
-          "youtubeVideoId": "RD4SdJIBNLQ"
-        },
-        {
-          "id": 181369,
-          "gameId": 398522,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "gS9q6essYSM"
-        },
-        {
-          "id": 181370,
-          "gameId": 380980,
-          "name": "Trailer",
-          "youtubeVideoId": "t2AgEwYp7oA"
-        },
-        {
-          "id": 181364,
-          "gameId": 391820,
-          "name": "Trailer",
-          "youtubeVideoId": "M-ejWztkQJA"
-        },
-        {
-          "id": 181362,
-          "gameId": 362094,
-          "name": "Trailer",
-          "youtubeVideoId": "RGz_SnhWedo"
-        },
-        {
-          "id": 181361,
-          "gameId": 318921,
-          "name": "Trailer",
-          "youtubeVideoId": "I9S34mF0yXE"
-        },
-        {
-          "id": 181360,
-          "gameId": 396159,
-          "name": "Trailer",
-          "youtubeVideoId": "fiivqaxiN-c"
-        },
-        {
-          "id": 181358,
-          "gameId": 394666,
-          "name": "Trailer",
-          "youtubeVideoId": "oZLLyt35bMg"
-        },
-        {
-          "id": 181356,
-          "gameId": 384977,
-          "name": "Trailer",
-          "youtubeVideoId": "7sWmD0I2N44"
-        },
-        {
-          "id": 181355,
-          "gameId": 236321,
-          "name": "Trailer",
-          "youtubeVideoId": "QBQyZ0gzj_w"
-        },
-        {
-          "id": 181352,
-          "gameId": 370521,
-          "name": "Trailer",
-          "youtubeVideoId": "x3ekKMiuQ1o"
-        },
-        {
-          "id": 181351,
-          "gameId": 362063,
-          "name": "Trailer",
-          "youtubeVideoId": "ihF85cSMnYs"
-        },
-        {
-          "id": 181380,
-          "gameId": 348295,
-          "name": "Trailer",
-          "youtubeVideoId": "u2woTarQeZg"
-        },
-        {
-          "id": 181365,
-          "gameId": 249324,
-          "name": "Trailer",
-          "youtubeVideoId": "-TqHADv6zfg"
         }
       ]
     },
@@ -184489,12 +183802,6 @@
         {
           "id": 184381,
           "gameId": 143424,
-          "name": "Trailer",
-          "youtubeVideoId": "aMRYNcqlU4Q"
-        },
-        {
-          "id": 184382,
-          "gameId": 402508,
           "name": "Trailer",
           "youtubeVideoId": "aMRYNcqlU4Q"
         },
@@ -204463,18 +203770,6 @@
       ]
     },
     {
-      "id": 111950567618744,
-      "name": "Day of the Devs",
-      "description": "Evento listado na agenda oficial do Summer Game Fest.",
-      "startTime": "2026-06-05T23:00:00Z",
-      "endTime": null,
-      "timeZone": "America/Los_Angeles",
-      "liveStreamUrl": "https://www.summergamefest.com/events/day-of-the-devs26",
-      "logoUrl": null,
-      "games": [],
-      "videos": []
-    },
-    {
       "id": 14021170131545,
       "name": "Southeast Asian Games Showcase: Summer Game Fest 2026",
       "description": "Evento listado na agenda oficial do Summer Game Fest.",
@@ -208962,12 +208257,6 @@
         {
           "id": 186682,
           "gameId": 187096,
-          "name": "Release Date Trailer",
-          "youtubeVideoId": "_3zRlMgUWTE"
-        },
-        {
-          "id": 186688,
-          "gameId": 404906,
           "name": "Release Date Trailer",
           "youtubeVideoId": "_3zRlMgUWTE"
         },
@@ -215924,12 +215213,6 @@
           "youtubeVideoId": "B6Snuv1BMjE"
         },
         {
-          "id": 188944,
-          "gameId": 408164,
-          "name": "Dev Diary",
-          "youtubeVideoId": "B6Snuv1BMjE"
-        },
-        {
           "id": 188946,
           "gameId": 376793,
           "name": "Trailer",
@@ -220998,12 +220281,6 @@
           "youtubeVideoId": "gI73HGBttqo"
         },
         {
-          "id": 192331,
-          "gameId": 332437,
-          "name": "Trailer",
-          "youtubeVideoId": "gI73HGBttqo"
-        },
-        {
           "id": 192329,
           "gameId": 260799,
           "name": "Trailer",
@@ -221060,12 +220337,6 @@
         {
           "id": 157803,
           "gameId": 270397,
-          "name": "Announcement Trailer",
-          "youtubeVideoId": "XpqfRsJ_--A"
-        },
-        {
-          "id": 157801,
-          "gameId": 358766,
           "name": "Announcement Trailer",
           "youtubeVideoId": "XpqfRsJ_--A"
         },
