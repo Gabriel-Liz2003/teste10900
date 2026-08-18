@@ -9,4 +9,7 @@ interface ReleaseFeedApi {
 
     @GET("Gabriel-Liz2003/teste10900/main/data/releases/{month}.json")
     suspend fun getMonth(@Path("month") month: String): ReleaseMonthFeed
+
+    @GET("Gabriel-Liz2003/teste10900/main/data/releases/popularity.json")
+    suspend fun getPopularity(): ReleasePopularityFeed
 }
