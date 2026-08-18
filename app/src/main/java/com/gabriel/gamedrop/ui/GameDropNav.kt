@@ -88,7 +88,12 @@ fun GameDropNav(container: AppContainer, themeMode: ThemeMode, onCycleTheme: () 
                 )
             }
             composable("calendar") {
-                CalendarRoute(container.repository, innerPadding, onGameClick = { navController.navigate("detail/$it") })
+                CalendarRoute(
+                    repository = container.repository,
+                    releaseRepository = container.releaseRepository,
+                    contentPadding = innerPadding,
+                    onGameClick = { navController.navigate("detail/$it") }
+                )
             }
             composable("events") {
                 EventsRoute(container.eventRepository, innerPadding, onEventClick = { navController.navigate("event/$it") })
