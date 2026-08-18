@@ -7,18 +7,13 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-// Temporary source inventory for the 1.4 migration. The CI reconstructs legacy
-// sources before this tracked overlay is restored, so printing the relevant
-// files here lets the migration preserve the existing public contracts exactly.
+// Temporary source inventory for the 1.4 migration.
 run {
     val roots = listOf(
-        "ui/calendar",
-        "ui/detail",
-        "ui/details",
-        "data/remote",
-        "data/repository",
-        "data/model",
-        "core/SynopsisTranslator"
+        "domain/Game.kt",
+        "domain/ReleasePrecision",
+        "data/local/GameEntity",
+        "data/local/LocalMappers"
     )
     fileTree("src/main/java").matching { include("**/*.kt") }.files
         .filter { file -> roots.any { needle -> file.invariantSeparatorsPath.contains(needle) } }
