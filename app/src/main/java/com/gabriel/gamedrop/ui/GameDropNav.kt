@@ -105,7 +105,12 @@ fun GameDropNav(container: AppContainer, themeMode: ThemeMode, onCycleTheme: () 
             }
             composable("detail/{gameId}") { entry ->
                 val id = entry.arguments?.getString("gameId")?.toIntOrNull() ?: return@composable
-                DetailRoute(repository = container.repository, gameId = id, onBack = navController::popBackStack)
+                DetailRoute(
+                    repository = container.repository,
+                    releaseRepository = container.releaseRepository,
+                    gameId = id,
+                    onBack = navController::popBackStack
+                )
             }
         }
     }
