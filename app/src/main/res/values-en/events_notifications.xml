@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="event_notifications_title">Event notifications</string>
+    <string name="event_notifications_body">Notify when a new event is announced and about 1 hour before it starts.</string>
+    <string name="event_notification_channel_name">Gaming events</string>
+    <string name="event_notification_channel_description">Automatic alerts for gaming showcases and events.</string>
+    <string name="event_notification_new_title">New event announced</string>
+    <string name="event_notification_new_body">%1$s was added to the GameDrop calendar.</string>
+    <string name="event_notification_soon_title">Event starting soon</string>
+    <string name="event_notification_soon_body">%1$s starts in about 1 hour.</string>
+    <string name="events_calendar_title">Events calendar</string>
+    <string name="events_on_date">Events on %1$s</string>
+    <string name="events_no_date">No events on this date.</string>
+    <string name="events_countdown_now">Starting soon</string>
+</resources>
