@@ -14,6 +14,17 @@ val localProperties = Properties().apply {
 val rawgApiKey = localProperties.getProperty("RAWG_API_KEY", "")
 val escapedRawgApiKey = rawgApiKey.replace("\\", "\\\\").replace("\"", "\\\"")
 
+val releaseKeystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+val releaseKeystorePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+val releaseKeyAlias = System.getenv("ANDROID_KEY_ALIAS")
+val releaseKeyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+val hasReleaseSigning = listOf(
+    releaseKeystorePath,
+    releaseKeystorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+).all { !it.isNullOrBlank() }
+
 android {
     namespace = "com.gabriel.gamedrop"
     compileSdk = 36
@@ -30,9 +41,21 @@ android {
         buildConfigField("String", "RAWG_API_KEY", "\"$escapedRawgApiKey\"")
     }
 
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("officialRelease") {
+                storeFile = file(requireNotNull(releaseKeystorePath))
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
+            signingConfigs.findByName("officialRelease")?.let { signingConfig = it }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -54,7 +77,6 @@ android {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
 }
-
 
 dependencies {
     implementation("androidx.core:core-ktx:1.17.0")
@@ -100,7 +122,6 @@ dependencies {
     androidTestImplementation("androidx.room:room-testing:2.8.4")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 }
-
 
 kotlin {
     compilerOptions {

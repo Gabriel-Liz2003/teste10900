@@ -1,0 +1,25 @@
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# Signing secrets — never commit private signing material
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+*.p12
+*.pfx
+*.pem
+*.key
+**/ANDROID_KEYSTORE_BASE64.txt
+**/ANDROID_KEYSTORE_PASSWORD.txt
+**/ANDROID_KEY_PASSWORD.txt
+
+# OS
+.DS_Store
+Thumbs.db
