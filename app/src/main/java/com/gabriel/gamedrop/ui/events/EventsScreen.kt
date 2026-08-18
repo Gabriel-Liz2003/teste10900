@@ -132,6 +132,7 @@ private fun EventCard(event: GamingEvent, onEventClick: (Long) -> Unit) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventDetailRoute(
     repository: EventRepository,
