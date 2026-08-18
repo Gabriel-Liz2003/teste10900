@@ -3,37 +3,74 @@ name: Sync gaming events
 on:
   workflow_dispatch:
   schedule:
-    - cron: '17 */6 * * *'
+    - cron: '17 */3 * * *'
 
 permissions:
   contents: write
 
+concurrency:
+  group: gamedrop-event-feed
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Check IGDB configuration
-        id: config
+
+      - name: Build optional IGDB feed
+        shell: bash
         env:
           IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
           IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
+          EVENT_FEED_OUT: data/events-feed-igdb.json
         run: |
-          if [ -n "$IGDB_CLIENT_ID" ] && [ -n "$IGDB_CLIENT_SECRET" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
+          if [ -n "${IGDB_CLIENT_ID}" ] && [ -n "${IGDB_CLIENT_SECRET}" ]; then
+            echo "IGDB configured: enriching the public feed."
+            python3 scripts/sync_igdb_events.py || {
+              echo "IGDB failed; public official sources will still be used."
+              rm -f data/events-feed-igdb.json
+            }
           else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "IGDB secrets are not configured yet; keeping the existing feed."
+            echo "IGDB secrets not configured; continuing with public official sources."
           fi
-      - name: Fetch IGDB events
-        if: steps.config.outputs.ready == 'true'
-        env:
-          IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
-          IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
-        run: python3 scripts/sync_igdb_events.py
-      - name: Commit refreshed feed
-        if: steps.config.outputs.ready == 'true'
+
+      - name: Sync official public event sources
+        shell: bash
         run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/sync_public_events.py scripts/sync_igdb_events.py
+          python3 scripts/sync_public_events.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('data/events-feed.json')
+          feed = json.loads(p.read_text(encoding='utf-8'))
+          assert isinstance(feed.get('events'), list)
+          assert feed.get('generatedAt')
+          assert feed.get('source')
+          print('Validated feed with', len(feed['events']), 'events')
+          PY
+          rm -f data/events-feed-igdb.json
+
+      - name: Guard against accidental empty feed
+        shell: bash
+        run: |
+          set -euo pipefail
+          NEW_COUNT=$(python3 -c "import json; print(len(json.load(open('data/events-feed.json'))['events']))")
+          OLD_COUNT=$(git show HEAD:data/events-feed.json 2>/dev/null | python3 -c "import json,sys; print(len(json.load(sys.stdin).get('events', [])))" || echo 0)
+          echo "Old feed: ${OLD_COUNT}; new feed: ${NEW_COUNT}"
+          if [ "${NEW_COUNT}" -eq 0 ] && [ "${OLD_COUNT}" -gt 0 ]; then
+            echo "ERROR: refusing to replace a non-empty feed with an empty one."
+            exit 1
+          fi
+
+      - name: Commit refreshed feed
+        shell: bash
+        run: |
+          set -euo pipefail
           if git diff --quiet -- data/events-feed.json; then
             echo "No feed changes."
             exit 0
@@ -41,5 +78,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/events-feed.json
-          git commit -m "data: refresh gaming events feed"
+          git commit -m "data: refresh gaming events feed [skip ci]"
           git push
