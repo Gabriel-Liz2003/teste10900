@@ -1,15 +1,14 @@
 {
-  "schemaVersion": 2,
-  "generatedAt": "2026-08-18T21:01:33.001519Z",
-  "source": "GameDrop aggregator: official public sources + IGDB when configured",
+  "schemaVersion": 3,
+  "generatedAt": "2026-08-18T21:09:26.122591Z",
+  "source": "GameDrop aggregator: official public sources + IGDB enrichment",
   "sourcesStatus": [
     "Summer Game Fest:18",
     "PlayStation Blog:1",
     "Xbox Wire:0",
-    "Nintendo:0",
-    "gamescom:0",
-    "The Game Awards:0"
+    "Nintendo:0"
   ],
+  "igdbEnrichedEvents": 0,
   "events": [
     {
       "id": 156752522312391,
@@ -133,7 +132,7 @@
     },
     {
       "id": 240536628748769,
-      "name": "Green Games Showcase",
+      "name": "XBOX Games Showcase 2026",
       "description": "Evento listado na agenda oficial do Summer Game Fest.",
       "startTime": "2026-06-06T18:00:00Z",
       "endTime": null,
@@ -151,30 +150,6 @@
       "endTime": null,
       "timeZone": "America/Los_Angeles",
       "liveStreamUrl": "https://www.summergamefest.com/events/gayming-pride-parade",
-      "logoUrl": null,
-      "games": [],
-      "videos": []
-    },
-    {
-      "id": 94837902975196,
-      "name": "Frosty Games Showcase",
-      "description": "Evento listado na agenda oficial do Summer Game Fest.",
-      "startTime": "2026-06-06T22:00:00Z",
-      "endTime": null,
-      "timeZone": "America/Los_Angeles",
-      "liveStreamUrl": "https://www.summergamefest.com/events/frosty-games-showcase",
-      "logoUrl": null,
-      "games": [],
-      "videos": []
-    },
-    {
-      "id": 165025079520293,
-      "name": "XBOX Games Showcase 2026",
-      "description": "Evento listado na agenda oficial do Summer Game Fest.",
-      "startTime": "2026-06-07T17:00:00Z",
-      "endTime": null,
-      "timeZone": "America/Los_Angeles",
-      "liveStreamUrl": "https://www.summergamefest.com/events/xbox-games-showcase-2026",
       "logoUrl": null,
       "games": [],
       "videos": []
@@ -232,18 +207,6 @@
       "name": "gamescom Opening Night Live 2026",
       "description": "Show de abertura da gamescom 2026, com anúncios, trailers, novidades e apresentações de jogos.",
       "startTime": "2026-08-25T18:00:00Z",
-      "endTime": null,
-      "timeZone": "Europe/Berlin",
-      "liveStreamUrl": "https://www.youtube.com/@gamescom",
-      "logoUrl": null,
-      "games": [],
-      "videos": []
-    },
-    {
-      "id": 9900005,
-      "name": "gamescom 2026",
-      "description": "Período principal da gamescom 2026 em Colônia, Alemanha, com apresentações, estandes e novidades da indústria de games.",
-      "startTime": "2026-08-26T08:00:00Z",
       "endTime": "2026-08-30T18:00:00Z",
       "timeZone": "Europe/Berlin",
       "liveStreamUrl": "https://www.youtube.com/@gamescom",
@@ -271,18 +234,6 @@
       "endTime": null,
       "timeZone": "Europe/Berlin",
       "liveStreamUrl": "https://www.youtube.com/@FutureGamesShow",
-      "logoUrl": null,
-      "games": [],
-      "videos": []
-    },
-    {
-      "id": 9900004,
-      "name": "Xbox @ gamescom 2026 — Dia 2",
-      "description": "Segundo dia da transmissão oficial da Xbox na gamescom, com entrevistas, gameplay, trailers e outras novidades.",
-      "startTime": "2026-08-27T14:00:00Z",
-      "endTime": null,
-      "timeZone": "Europe/Berlin",
-      "liveStreamUrl": "https://www.youtube.com/@xbox",
       "logoUrl": null,
       "games": [],
       "videos": []
