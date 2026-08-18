@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="event_notifications_title">Notificações de eventos</string>
+    <string name="event_notifications_body">Avise quando um novo evento for anunciado e cerca de 1 hora antes dele começar.</string>
+    <string name="event_notification_channel_name">Eventos de games</string>
+    <string name="event_notification_channel_description">Avisos automáticos sobre showcases e eventos de games.</string>
+    <string name="event_notification_new_title">Novo evento anunciado</string>
+    <string name="event_notification_new_body">%1$s foi adicionado ao calendário do GameDrop.</string>
+    <string name="event_notification_soon_title">Evento começando em breve</string>
+    <string name="event_notification_soon_body">%1$s começa em aproximadamente 1 hora.</string>
+    <string name="events_calendar_title">Calendário de eventos</string>
+    <string name="events_on_date">Eventos em %1$s</string>
+    <string name="events_no_date">Nenhum evento nesta data.</string>
+    <string name="events_countdown_now">Começando em breve</string>
+</resources>
