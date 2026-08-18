@@ -1,4 +1,4 @@
-name: Sync gaming events
+name: Sync gaming events and releases
 
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ on:
       - 'scripts/sync_public_events.py'
       - 'scripts/sync_major_events.py'
       - 'scripts/sync_igdb_events.py'
+      - 'scripts/sync_igdb_releases.py'
       - 'scripts/finalize_event_feed.py'
       - 'scripts/test_event_merge.py'
       - '.github/workflows/sync-events.yml'
@@ -19,6 +20,7 @@ on:
       - 'scripts/sync_public_events.py'
       - 'scripts/sync_major_events.py'
       - 'scripts/sync_igdb_events.py'
+      - 'scripts/sync_igdb_releases.py'
       - 'scripts/finalize_event_feed.py'
       - 'scripts/test_event_merge.py'
       - '.github/workflows/sync-events.yml'
@@ -27,24 +29,30 @@ permissions:
   contents: write
 
 concurrency:
-  group: gamedrop-event-feed-${{ github.ref }}
+  group: gamedrop-content-feeds-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate event merge logic
+      - name: Validate feed code
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/sync_public_events.py scripts/sync_major_events.py scripts/sync_igdb_events.py scripts/finalize_event_feed.py scripts/test_event_merge.py
+          python3 -m py_compile \
+            scripts/sync_public_events.py \
+            scripts/sync_major_events.py \
+            scripts/sync_igdb_events.py \
+            scripts/sync_igdb_releases.py \
+            scripts/finalize_event_feed.py \
+            scripts/test_event_merge.py
           PYTHONPATH=scripts python3 scripts/test_event_merge.py
 
-      - name: Build and validate IGDB feed
+      - name: Build and validate IGDB event feed
         id: igdb
         shell: bash
         env:
@@ -55,7 +63,7 @@ jobs:
           set -euo pipefail
           if [ -n "${IGDB_CLIENT_ID}" ] && [ -n "${IGDB_CLIENT_SECRET}" ]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
-            echo "IGDB configured: authenticating and generating enrichment feed."
+            echo "IGDB configured: authenticating and generating event enrichment feed."
             python3 scripts/sync_igdb_events.py
             python3 - <<'PY'
           import json
@@ -66,12 +74,39 @@ jobs:
           with_games = sum(1 for e in events if e.get('games'))
           assert events, 'IGDB returned zero events'
           assert with_games, 'IGDB returned zero events with games'
-          print(f'IGDB validation: events={len(events)}, withGames={with_games}')
+          print(f'IGDB events: events={len(events)}, withGames={with_games}')
           PY
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "IGDB secrets are not configured; using official public sources only."
+            echo "IGDB secrets are not configured; public event feed will use its fallbacks."
           fi
+
+      - name: Build IGDB release calendar feed
+        if: steps.igdb.outputs.configured == 'true'
+        shell: bash
+        env:
+          IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
+          IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
+          RELEASE_FEED_OUT: data/releases-feed.json
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_igdb_releases.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('data/releases-feed.json')
+          feed = json.loads(p.read_text(encoding='utf-8'))
+          games = feed.get('games') or []
+          assert games, 'Release calendar feed is empty'
+          assert feed.get('gameCount') == len(games)
+          assert feed.get('gamesWithTrailers', 0) > 0
+          assert any(g.get('releaseDates') for g in games)
+          print('Release validation:', {
+              'games': len(games),
+              'withTrailers': feed.get('gamesWithTrailers'),
+              'bytes': p.stat().st_size,
+          })
+          PY
 
       - name: Sync official public event sources
         shell: bash
@@ -80,7 +115,7 @@ jobs:
           python3 scripts/sync_public_events.py
           python3 scripts/sync_major_events.py
 
-      - name: Finalize and compact feed
+      - name: Finalize and compact event feed
         shell: bash
         env:
           IGDB_CONFIGURED: ${{ steps.igdb.outputs.configured }}
@@ -92,7 +127,7 @@ jobs:
           from pathlib import Path
           p = Path('data/events-feed.json')
           feed = json.loads(p.read_text(encoding='utf-8'))
-          assert feed.get('events'), 'Final feed is empty'
+          assert feed.get('events'), 'Final event feed is empty'
           assert feed.get('generatedAt')
           assert feed.get('source')
           assert feed.get('eventCount') == len(feed['events'])
@@ -100,40 +135,43 @@ jobs:
               assert feed.get('igdbRawEvents', 0) > 0
               assert feed.get('igdbRawEventsWithGames', 0) > 0
               assert feed.get('igdbEnrichedEvents', 0) > 0
-          print('Final validation:', {
+          print('Event validation:', {
               'eventCount': feed.get('eventCount'),
-              'igdbConfigured': feed.get('igdbConfigured'),
-              'igdbRawEvents': feed.get('igdbRawEvents'),
-              'igdbRawEventsWithGames': feed.get('igdbRawEventsWithGames'),
               'igdbEnrichedEvents': feed.get('igdbEnrichedEvents'),
               'bytes': p.stat().st_size,
           })
           PY
           rm -f data/events-feed-igdb.json
 
-      - name: Guard against accidental empty feed
+      - name: Guard against accidental empty feeds
         shell: bash
         run: |
           set -euo pipefail
-          NEW_COUNT=$(python3 -c "import json; print(len(json.load(open('data/events-feed.json'))['events']))")
-          OLD_COUNT=$(git show HEAD:data/events-feed.json 2>/dev/null | python3 -c "import json,sys; print(len(json.load(sys.stdin).get('events', [])))" || echo 0)
-          echo "Old feed: ${OLD_COUNT}; new feed: ${NEW_COUNT}"
-          if [ "${NEW_COUNT}" -eq 0 ]; then
-            echo "ERROR: refusing to publish an empty feed."
+          EVENT_COUNT=$(python3 -c "import json; print(len(json.load(open('data/events-feed.json')).get('events', [])))")
+          if [ "${EVENT_COUNT}" -eq 0 ]; then
+            echo "ERROR: refusing to publish an empty event feed."
             exit 1
           fi
+          if [ -f data/releases-feed.json ]; then
+            RELEASE_COUNT=$(python3 -c "import json; print(len(json.load(open('data/releases-feed.json')).get('games', [])))")
+            if [ "${RELEASE_COUNT}" -eq 0 ]; then
+              echo "ERROR: refusing to publish an empty release feed."
+              exit 1
+            fi
+          fi
 
-      - name: Commit refreshed feed
+      - name: Commit refreshed feeds
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- data/events-feed.json; then
-            echo "No feed changes."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/events-feed.json
-          git commit -m "data: refresh gaming events feed [skip ci]"
+          if [ -f data/releases-feed.json ]; then git add data/releases-feed.json; fi
+          if git diff --cached --quiet; then
+            echo "No feed changes."
+            exit 0
+          fi
+          git commit -m "data: refresh GameDrop content feeds [skip ci]"
           git push
