@@ -1,14 +1,19 @@
 name: Build GameDrop APK
+
 on:
   workflow_dispatch:
   push:
     branches: [gamedrop-apk-build]
+  pull_request:
+    branches: [gamedrop-apk-build]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+
       - name: Reconstruct GameDrop project
         shell: bash
         env:
@@ -20,6 +25,7 @@ jobs:
           base64 -d ci_tests/tests.tar.gz.b64 > tests.tar.gz
           tar -xzf tests.tar.gz
           rm tests.tar.gz
+
           test -f settings.gradle.kts
           test -f app/build.gradle.kts
           sed -i 's/androidx.core:core-ktx:1.19.0/androidx.core:core-ktx:1.17.0/' app/build.gradle.kts
@@ -36,7 +42,7 @@ jobs:
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
           sed -i 's/gridItems(42) { cell ->/gridItems((0 until 42).toList()) { cell ->/' app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt
 
-          # Fetch verified binary parts by immutable Git blob SHA.
+          # Reconstruct the validated GameDrop 1.1.0 overlay.
           for spec in \
             'fb6753f02933e4d43ead30a21290f489881b6414:/tmp/part.00' \
             'fc710d864993d7110b8277f6a4c4a66808947413:/tmp/part.01' \
@@ -55,41 +61,78 @@ jobs:
           tar -xzf patch.tar.gz
           rm patch.tar.gz /tmp/part.00 /tmp/part.01 /tmp/part.02
 
+          # Pull requests may carry a newer tracked feature layer. Restore it after
+          # reconstructing the legacy source payload so CI tests the actual PR merge.
+          if git cat-file -e HEAD:app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt 2>/dev/null; then
+            git checkout HEAD -- \
+              app/build.gradle.kts \
+              app/src/main/java/com/gabriel/gamedrop/AppContainer.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/GameDropNav.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventModels.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventFeedApi.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventRepository.kt \
+              app/src/main/java/com/gabriel/gamedrop/data/events/EventTimeUtils.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsViewModel.kt \
+              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt \
+              app/src/main/res/values/strings.xml \
+              app/src/main/res/values-en/strings.xml \
+              app/src/test/java/com/gabriel/gamedrop/data/events/EventTimeUtilsTest.kt
+            EXPECTED_TESTS=18
+            EXPECTED_VERSION=1.2.0
+            EXPECTED_CODE=3
+          else
+            EXPECTED_TESTS=14
+            EXPECTED_VERSION=1.1.0
+            EXPECTED_CODE=2
+          fi
+
           test -f app/src/main/java/com/gabriel/gamedrop/MainActivity.kt
           test -f app/src/main/java/com/gabriel/gamedrop/core/SynopsisTranslator.kt
           test -f app/src/main/res/values-en/strings.xml
           test -f app/src/main/res/xml/locales_config.xml
-          test "$(grep -R --include='*.kt' -h '@Test' app/src/test | wc -l | tr -d ' ')" -eq 14
-          grep -q 'versionName = "1.1.0"' app/build.gradle.kts
+          test "$(grep -R --include='*.kt' -h '@Test' app/src/test | wc -l | tr -d ' ')" -eq "$EXPECTED_TESTS"
+          grep -q "versionCode = $EXPECTED_CODE" app/build.gradle.kts
+          grep -q "versionName = \"$EXPECTED_VERSION\"" app/build.gradle.kts
+
+          echo "GAMEDROP_VERSION=$EXPECTED_VERSION" >> "$GITHUB_ENV"
+          echo "GAMEDROP_TESTS=$EXPECTED_TESTS" >> "$GITHUB_ENV"
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
+
       - uses: android-actions/setup-android@v3
+
       - name: Install Android SDK 36
         shell: bash
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-      - name: Run 14 JVM tests and build GameDrop 1.1.0
+
+      - name: Run JVM tests and build APK
         shell: bash
         run: |
           set -o pipefail
+          echo "Building GameDrop ${GAMEDROP_VERSION} with ${GAMEDROP_TESTS} expected tests"
           gradle testDebugUnitTest assembleDebug --stacktrace 2>&1 | tee build.log
+
       - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: GameDrop-1.1.0-build-log
+          name: GameDrop-${{ env.GAMEDROP_VERSION }}-build-log
           path: build.log
           if-no-files-found: warn
           retention-days: 7
+
       - name: Upload APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: GameDrop-1.1.0-apk
+          name: GameDrop-${{ env.GAMEDROP_VERSION }}-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
