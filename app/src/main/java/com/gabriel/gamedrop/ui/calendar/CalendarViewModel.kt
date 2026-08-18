@@ -25,6 +25,13 @@ data class CalendarUiState(
     val error: AppError? = null
 )
 
+private data class CalendarInputs(
+    val month: YearMonth,
+    val selectedDate: LocalDate,
+    val mode: CalendarMode,
+    val refresh: Pair<Boolean, AppError?>
+)
+
 class CalendarViewModel(
     private val repository: GameCatalogRepository,
     private val releaseRepository: ReleaseFeedRepository
@@ -35,11 +42,15 @@ class CalendarViewModel(
     private val refresh = MutableStateFlow<Pair<Boolean, AppError?>>(false to null)
     private val popularity = MutableStateFlow<Map<Int, Double>>(emptyMap())
 
+    private val inputs = combine(month, selectedDate, mode, refresh) { currentMonth, selected, currentMode, refreshState ->
+        CalendarInputs(currentMonth, selected, currentMode, refreshState)
+    }
+
     val uiState: StateFlow<CalendarUiState> = combine(
-        repository.observeCatalog(), month, selectedDate, mode, refresh, popularity
-    ) { games, currentMonth, selected, currentMode, refreshState, popularityScores ->
+        repository.observeCatalog(), inputs, popularity
+    ) { games, input, popularityScores ->
         val candidates = games.filter { game ->
-            game.releaseDate?.let { YearMonth.from(it) == currentMonth } == true
+            game.releaseDate?.let { YearMonth.from(it) == input.month } == true
         }
         val deduped = preferIgdbDuplicates(candidates)
         fun score(game: Game): Double = if (IgdbGameIds.isIgdb(game.id)) {
@@ -49,16 +60,16 @@ class CalendarViewModel(
         val monthGames = deduped.sortedWith(
             compareByDescending<Game> { score(it) }.thenBy { it.name.lowercase() }
         )
-        val selectedGames = monthGames.filter { it.releaseDate == selected }
+        val selectedGames = monthGames.filter { it.releaseDate == input.selectedDate }
 
         CalendarUiState(
-            month = currentMonth,
-            selectedDate = selected,
-            mode = currentMode,
+            month = input.month,
+            selectedDate = input.selectedDate,
+            mode = input.mode,
             gamesInMonth = monthGames,
             selectedGames = selectedGames,
-            isRefreshing = refreshState.first,
-            error = refreshState.second
+            isRefreshing = input.refresh.first,
+            error = input.refresh.second
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CalendarUiState())
 
