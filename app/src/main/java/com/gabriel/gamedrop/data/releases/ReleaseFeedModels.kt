@@ -27,6 +27,18 @@ data class ReleaseMonthFeed(
     val games: List<IgdbReleaseGame> = emptyList()
 )
 
+data class ReleasePopularityFeed(
+    val schemaVersion: Int = 1,
+    val gameCount: Int = 0,
+    val games: Map<String, ReleasePopularity> = emptyMap()
+)
+
+data class ReleasePopularity(
+    val score: Double = 0.0,
+    val hypes: Int = 0,
+    val ratingCount: Int = 0
+)
+
 data class IgdbReleaseGame(
     val igdbId: Int,
     val name: String,
