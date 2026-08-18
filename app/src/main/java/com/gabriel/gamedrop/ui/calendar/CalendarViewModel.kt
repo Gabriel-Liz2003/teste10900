@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gabriel.gamedrop.core.AppError
 import com.gabriel.gamedrop.data.releases.IgdbGameIds
+import com.gabriel.gamedrop.data.releases.ReleaseFeedRepository
 import com.gabriel.gamedrop.data.repository.GameCatalogRepository
 import com.gabriel.gamedrop.data.repository.SyncOutcome
 import com.gabriel.gamedrop.domain.Game
@@ -24,34 +25,43 @@ data class CalendarUiState(
     val error: AppError? = null
 )
 
-class CalendarViewModel(private val repository: GameCatalogRepository) : ViewModel() {
+class CalendarViewModel(
+    private val repository: GameCatalogRepository,
+    private val releaseRepository: ReleaseFeedRepository
+) : ViewModel() {
     private val month = MutableStateFlow(YearMonth.now())
     private val selectedDate = MutableStateFlow(LocalDate.now())
     private val mode = MutableStateFlow(CalendarMode.MONTH)
     private val refresh = MutableStateFlow<Pair<Boolean, AppError?>>(false to null)
+    private val popularity = MutableStateFlow<Map<Int, Double>>(emptyMap())
 
     val uiState: StateFlow<CalendarUiState> = combine(
-        repository.observeCatalog(), month, selectedDate, mode, refresh
-    ) { games, currentMonth, selected, currentMode, refreshState ->
+        repository.observeCatalog(), month, selectedDate, mode, refresh, popularity
+    ) { games, currentMonth, selected, currentMode, refreshState, popularityScores ->
         val candidates = games.filter { game ->
             game.releaseDate?.let { YearMonth.from(it) == currentMonth } == true
         }
-        val monthGames = preferIgdbDuplicates(candidates).sortedWith(
-            compareBy<Game> { it.releaseDate }.thenBy { it.name.lowercase() }
+        val deduped = preferIgdbDuplicates(candidates)
+        fun score(game: Game): Double = if (IgdbGameIds.isIgdb(game.id)) {
+            popularityScores[IgdbGameIds.decode(game.id)] ?: 0.0
+        } else 0.0
+
+        val monthGames = deduped.sortedWith(
+            compareByDescending<Game> { score(it) }.thenBy { it.name.lowercase() }
         )
+        val selectedGames = monthGames.filter { it.releaseDate == selected }
+
         CalendarUiState(
             month = currentMonth,
             selectedDate = selected,
             mode = currentMode,
             gamesInMonth = monthGames,
-            selectedGames = monthGames.filter { it.releaseDate == selected },
+            selectedGames = selectedGames,
             isRefreshing = refreshState.first,
             error = refreshState.second
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CalendarUiState())
 
-    // Force the first v1.4 month sync so an old RAWG metadata TTL cannot postpone
-    // migration to the IGDB-backed calendar. Monthly feed files still have their own cache.
     init { syncMonth(force = true) }
 
     fun moveMonths(amount: Long) {
@@ -78,6 +88,8 @@ class CalendarViewModel(private val repository: GameCatalogRepository) : ViewMod
             refresh.value = true to null
             val m = month.value
             val result = repository.syncRange(m.atDay(1), m.atEndOfMonth(), force)
+            popularity.value = runCatching { releaseRepository.popularityScores(force) }
+                .getOrDefault(popularity.value)
             refresh.value = when (result) {
                 is SyncOutcome.Failure -> false to result.error
                 else -> false to null
