@@ -10,6 +10,7 @@ import com.gabriel.gamedrop.data.remote.RawgApiService
 import com.gabriel.gamedrop.data.remote.RawgRemoteDataSource
 import com.gabriel.gamedrop.data.repository.GameCatalogRepository
 import com.gabriel.gamedrop.data.repository.GameCatalogRepositoryImpl
+import com.gabriel.gamedrop.events.EventNotificationCoordinator
 import com.gabriel.gamedrop.notifications.WorkManagerNotificationScheduler
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -17,6 +18,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
 
 class AppContainer(context: Context) {
+    private val appContext = context.applicationContext
     private val db = AppDatabase.get(context)
     val preferences = AppPreferences(context)
     private val scheduler = WorkManagerNotificationScheduler(context)
@@ -45,4 +47,8 @@ class AppContainer(context: Context) {
         .create(EventFeedApi::class.java)
 
     val eventRepository: EventRepository = EventRepositoryImpl(context, eventApi, Gson())
+
+    init {
+        EventNotificationCoordinator.ensurePeriodicSync(appContext)
+    }
 }
