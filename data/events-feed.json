@@ -1,6 +1,67 @@
 {
   "schemaVersion": 1,
-  "generatedAt": null,
-  "source": "IGDB",
-  "events": []
+  "generatedAt": "2026-08-18T20:55:00Z",
+  "source": "GameDrop curated + official sources",
+  "events": [
+    {
+      "id": 9900001,
+      "name": "gamescom Opening Night Live 2026",
+      "description": "Show de abertura da gamescom 2026, com anúncios, trailers, novidades e apresentações de jogos.",
+      "startTime": "2026-08-25T18:00:00Z",
+      "endTime": null,
+      "timeZone": "Europe/Berlin",
+      "liveStreamUrl": "https://www.youtube.com/@gamescom",
+      "logoUrl": null,
+      "games": [],
+      "videos": []
+    },
+    {
+      "id": 9900002,
+      "name": "Xbox @ gamescom 2026 — Dia 1",
+      "description": "Transmissão oficial da Xbox direto da gamescom, com entrevistas, convidados, revelações de gameplay e novos trailers.",
+      "startTime": "2026-08-26T14:00:00Z",
+      "endTime": null,
+      "timeZone": "Europe/Berlin",
+      "liveStreamUrl": "https://www.youtube.com/@xbox",
+      "logoUrl": null,
+      "games": [],
+      "videos": []
+    },
+    {
+      "id": 9900003,
+      "name": "Future Games Show @ gamescom 2026",
+      "description": "Apresentação Future Games Show durante a gamescom 2026, com trailers e novidades de jogos.",
+      "startTime": "2026-08-26T17:00:00Z",
+      "endTime": null,
+      "timeZone": "Europe/Berlin",
+      "liveStreamUrl": "https://www.youtube.com/@FutureGamesShow",
+      "logoUrl": null,
+      "games": [],
+      "videos": []
+    },
+    {
+      "id": 9900004,
+      "name": "Xbox @ gamescom 2026 — Dia 2",
+      "description": "Segundo dia da transmissão oficial da Xbox na gamescom, com entrevistas, gameplay, trailers e outras novidades.",
+      "startTime": "2026-08-27T14:00:00Z",
+      "endTime": null,
+      "timeZone": "Europe/Berlin",
+      "liveStreamUrl": "https://www.youtube.com/@xbox",
+      "logoUrl": null,
+      "games": [],
+      "videos": []
+    },
+    {
+      "id": 9900005,
+      "name": "gamescom 2026",
+      "description": "Período principal da gamescom 2026 em Colônia, Alemanha, com apresentações, estandes e novidades da indústria de games.",
+      "startTime": "2026-08-26T08:00:00Z",
+      "endTime": "2026-08-30T18:00:00Z",
+      "timeZone": "Europe/Berlin",
+      "liveStreamUrl": "https://www.youtube.com/@gamescom",
+      "logoUrl": null,
+      "games": [],
+      "videos": []
+    }
+  ]
 }
