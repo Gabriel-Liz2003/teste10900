@@ -6,13 +6,14 @@ import re
 import urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from difflib import SequenceMatcher
 from html.parser import HTMLParser
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 OUT = Path("data/events-feed.json")
 IGDB_FEED = Path("data/events-feed-igdb.json")
-UA = "GameDrop-EventSync/1.0 (+https://github.com/Gabriel-Liz2003/teste10900)"
+UA = "GameDrop-EventSync/1.1 (+https://github.com/Gabriel-Liz2003/teste10900)"
 
 MONTHS = {
     "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
@@ -63,8 +64,96 @@ def event(name, start, description=None, live=None, end=None, tz=None, source_ur
     }
 
 
+def normalize_name(name):
+    value = (name or "").lower()
+    value = re.sub(r"\b20\d{2}\b", " ", value)
+    value = value.replace("@", " at ")
+    value = re.sub(r"[^a-z0-9]+", " ", value)
+    return re.sub(r"\s+", " ", value).strip()
+
+
+def parse_instant(raw):
+    try:
+        return datetime.fromisoformat((raw or "").replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
+def same_event(a, b):
+    an, bn = normalize_name(a.get("name")), normalize_name(b.get("name"))
+    if not an or not bn:
+        return False
+    at, bt = parse_instant(a.get("startTime")), parse_instant(b.get("startTime"))
+    if not at or not bt:
+        return False
+    hours = abs((at - bt).total_seconds()) / 3600
+    if hours > 24:
+        return False
+    ratio = SequenceMatcher(None, an, bn).ratio()
+    contained = min(len(an), len(bn)) >= 8 and (an in bn or bn in an)
+    a_tokens, b_tokens = set(an.split()), set(bn.split())
+    overlap = len(a_tokens & b_tokens) / max(1, min(len(a_tokens), len(b_tokens)))
+    return contained or ratio >= 0.72 or overlap >= 0.75
+
+
+def merge_list_by_key(left, right, key_fn):
+    out = []
+    seen = set()
+    for item in (left or []) + (right or []):
+        key = key_fn(item)
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(item)
+    return out
+
+
+def merge_record(base, incoming):
+    out = dict(base)
+    # Keep the existing ID stable so notifications/deep links do not churn.
+    for field in ("description", "endTime", "timeZone", "liveStreamUrl", "logoUrl"):
+        if not out.get(field) and incoming.get(field):
+            out[field] = incoming[field]
+    # Prefer a slightly more descriptive name, but do not replace a good existing one with a shorter alias.
+    if len((incoming.get("name") or "").strip()) > len((out.get("name") or "").strip()):
+        out["name"] = incoming["name"]
+    out["games"] = merge_list_by_key(
+        out.get("games"), incoming.get("games"),
+        lambda g: g.get("igdbId") or normalize_name(g.get("name"))
+    )
+    out["videos"] = merge_list_by_key(
+        out.get("videos"), incoming.get("videos"),
+        lambda v: v.get("youtubeVideoId") or v.get("id") or normalize_name(v.get("name"))
+    )
+    return out
+
+
+def merge_events(*groups):
+    merged = []
+    for group in groups:
+        for candidate in group or []:
+            start = candidate.get("startTime")
+            name = (candidate.get("name") or "").strip()
+            if not start or not name:
+                continue
+            idx = next((i for i, current in enumerate(merged) if same_event(current, candidate)), None)
+            if idx is None:
+                merged.append(candidate)
+            else:
+                merged[idx] = merge_record(merged[idx], candidate)
+    return sorted(merged, key=lambda x: x["startTime"])
+
+
+class LinkParser(HTMLParser):
+    def __init__(self):
+        super().__init__(); self.links = []
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "a":
+            href = dict(attrs).get("href")
+            if href: self.links.append(href)
+
+
 def parse_time(text, default_hour=12, default_minute=0):
-    # Prefer explicit PT/ET time because official US gaming announcements commonly publish one.
     m = re.search(r"\b(1[0-2]|0?[1-9])(?::([0-5]\d))?\s*(a\.?m\.?|p\.?m\.?)\s*(PT|PST|PDT|ET|EST|EDT)\b", text, re.I)
     if not m:
         return default_hour, default_minute, None
@@ -77,12 +166,7 @@ def parse_time(text, default_hour=12, default_minute=0):
 
 def extract_date_time(text, year_hint=None):
     clean = strip_html(text)
-    # Month Day, Year / Month Day Year / Month Day
-    m = re.search(
-        r"\b(" + "|".join(MONTHS) + r")\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(20\d{2}))?\b",
-        clean,
-        re.I,
-    )
+    m = re.search(r"\b(" + "|".join(MONTHS) + r")\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(20\d{2}))?\b", clean, re.I)
     if not m:
         return None
     month = MONTHS[m.group(1).lower()]
@@ -94,35 +178,6 @@ def extract_date_time(text, year_hint=None):
         return datetime(year, month, day, hour, minute, tzinfo=zone)
     except ValueError:
         return None
-
-
-def merge_events(*groups):
-    merged = {}
-    for group in groups:
-        for e in group or []:
-            start = e.get("startTime")
-            name = (e.get("name") or "").strip()
-            if not start or not name:
-                continue
-            key = (re.sub(r"\W+", "", name.lower()), start[:10])
-            current = merged.get(key)
-            if current is None:
-                merged[key] = e
-            else:
-                # Prefer richer records (games, logo, description, livestream).
-                score = lambda x: len(x.get("games", [])) * 10 + bool(x.get("logoUrl")) * 3 + bool(x.get("description")) * 2 + bool(x.get("liveStreamUrl"))
-                if score(e) > score(current):
-                    merged[key] = e
-    return sorted(merged.values(), key=lambda x: x["startTime"])
-
-
-class LinkParser(HTMLParser):
-    def __init__(self):
-        super().__init__(); self.links = []
-    def handle_starttag(self, tag, attrs):
-        if tag.lower() == "a":
-            href = dict(attrs).get("href")
-            if href: self.links.append(href)
 
 
 def sync_sgf():
@@ -158,9 +213,8 @@ def parse_rss(url, source_name):
             continue
         link = strip_html(item.findtext("link") or "")
         pub = item.findtext("pubDate") or ""
-        year_hint = None
         ym = re.search(r"(20\d{2})", pub)
-        if ym: year_hint = int(ym.group(1))
+        year_hint = int(ym.group(1)) if ym else None
         content = " ".join(x.text or "" for x in item if x.tag.endswith("encoded"))
         desc = item.findtext("description") or ""
         article = content + " " + desc
@@ -170,16 +224,14 @@ def parse_rss(url, source_name):
         except Exception:
             pass
         dt = extract_date_time(article, year_hint)
-        if not dt:
-            continue
-        out.append(event(title, iso(dt), description=f"Descoberto automaticamente em {source_name}.", source_url=link or url, tz=str(dt.tzinfo)))
+        if dt:
+            out.append(event(title, iso(dt), description=f"Descoberto automaticamente em {source_name}.", source_url=link or url, tz=str(dt.tzinfo)))
     return out
 
 
 def sync_nintendo():
     url = "https://www.nintendo.com/us/whatsnew/"
     body = fetch(url)
-    # Pull article links whose visible anchor text mentions Direct/showcase.
     matches = re.findall(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', body, re.I | re.S)
     out = []
     for href, label_html in matches:
@@ -198,37 +250,11 @@ def sync_nintendo():
 
 
 def sync_gamescom():
-    url = "https://www.gamescom.global/en/live/events"
-    text = strip_html(fetch(url))
-    out = []
-    # Official page reliably carries the annual date range and ONL date.
-    m = re.search(r"gamescom\s+(20\d{2}).{0,180}?from\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\s+to\s+(\d{1,2})(?:st|nd|rd|th)?\s+of\s+August", text, re.I)
-    if not m:
-        m = re.search(r"gamescom\s+(20\d{2}).{0,180}?August\s+(\d{1,2})\s+to\s+(\d{1,2})", text, re.I)
-    if m:
-        year, d1, d2 = map(int, m.groups())
-        start = datetime(year, 8, d1, 10, 0, tzinfo=ZoneInfo("Europe/Berlin"))
-        end = datetime(year, 8, d2, 20, 0, tzinfo=ZoneInfo("Europe/Berlin"))
-        out.append(event(f"gamescom {year}", iso(start), "Maior feira anual de games em Colônia.", source_url=url, end=iso(end), tz="Europe/Berlin"))
-    onl = re.search(r"Opening Night Live.{0,160}?August\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(20\d{2}))?", text, re.I)
-    if onl:
-        day = int(onl.group(1)); year = int(onl.group(2) or datetime.now(timezone.utc).year)
-        # If the page does not expose a clock time, keep a conservative evening placeholder; richer RSS/IGDB data wins during merge.
-        start = datetime(year, 8, day, 20, 0, tzinfo=ZoneInfo("Europe/Berlin"))
-        out.append(event(f"gamescom Opening Night Live {year}", iso(start), "Show de abertura oficial da gamescom.", source_url=url, tz="Europe/Berlin"))
-    return out
+    return []
 
 
 def sync_tga():
-    url = "https://thegameawards.com/faq"
-    text = strip_html(fetch(url))
-    m = re.search(r"Thursday,\s+(December)\s+(\d{1,2}),\s+(20\d{2}).{0,240}?(\d{1,2}):(\d{2})\s*p\.?m\.?\s*ET", text, re.I)
-    if not m:
-        return []
-    day, year, hour, minute = int(m.group(2)), int(m.group(3)), int(m.group(4)), int(m.group(5))
-    if hour != 12: hour += 12
-    dt = datetime(year, 12, day, hour, minute, tzinfo=ZoneInfo("America/New_York"))
-    return [event(f"The Game Awards {year}", iso(dt), "Premiação anual com anúncios e world premieres.", source_url=url, tz="America/New_York")]
+    return []
 
 
 def load_feed(path):
@@ -248,22 +274,17 @@ def main():
         ("PlayStation Blog", lambda: parse_rss("https://blog.playstation.com/feed/", "PlayStation Blog")),
         ("Xbox Wire", lambda: parse_rss("https://news.xbox.com/en-us/feed/", "Xbox Wire")),
         ("Nintendo", sync_nintendo),
-        ("gamescom", sync_gamescom),
-        ("The Game Awards", sync_tga),
     ]:
         try:
-            rows = fn()
-            discovered.extend(rows)
-            sources_ok.append(f"{name}:{len(rows)}")
+            rows = fn(); discovered.extend(rows); sources_ok.append(f"{name}:{len(rows)}")
         except Exception as exc:
             print(f"SOURCE ERROR {name}: {exc}")
 
-    merged = merge_events(existing.get("events", []), igdb.get("events", []), discovered)
-    # Never destroy a healthy feed because upstream sources temporarily fail.
+    # Public/official events establish stable IDs and livestream links; IGDB runs last to enrich them with games, covers and videos.
+    merged = merge_events(existing.get("events", []), discovered, igdb.get("events", []))
     if not merged and existing.get("events"):
         merged = existing["events"]
     now = datetime.now(timezone.utc)
-    # Retain 2 years of history and all future events so past-event pages remain useful.
     cutoff = now.timestamp() - 730 * 86400
     kept = []
     for e in merged:
@@ -274,15 +295,17 @@ def main():
         if ts >= cutoff:
             kept.append(e)
 
+    enriched_count = sum(1 for e in kept if e.get("games"))
     feed = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "generatedAt": now.isoformat().replace("+00:00", "Z"),
-        "source": "GameDrop aggregator: official public sources + IGDB when configured",
+        "source": "GameDrop aggregator: official public sources + IGDB enrichment",
         "sourcesStatus": sources_ok,
+        "igdbEnrichedEvents": enriched_count,
         "events": kept,
     }
     OUT.write_text(json.dumps(feed, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"Wrote {len(kept)} events; sources: {', '.join(sources_ok)}")
+    print(f"Wrote {len(kept)} events; IGDB-enriched events: {enriched_count}; sources: {', '.join(sources_ok)}")
 
 
 if __name__ == "__main__":
