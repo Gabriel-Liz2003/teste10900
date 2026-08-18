@@ -7,24 +7,6 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-// Temporary source inventory for the 1.4 migration.
-run {
-    val roots = listOf(
-        "domain/Game.kt",
-        "domain/ReleasePrecision",
-        "data/local/GameEntity",
-        "data/local/LocalMappers"
-    )
-    fileTree("src/main/java").matching { include("**/*.kt") }.files
-        .filter { file -> roots.any { needle -> file.invariantSeparatorsPath.contains(needle) } }
-        .sortedBy { it.invariantSeparatorsPath }
-        .forEach { file ->
-            println("===== GAMEDROP_SOURCE_BEGIN ${file.invariantSeparatorsPath.substringAfter("/app/")} =====")
-            println(file.readText())
-            println("===== GAMEDROP_SOURCE_END ${file.invariantSeparatorsPath.substringAfter("/app/")} =====")
-        }
-}
-
 val localProperties = Properties().apply {
     val file = rootProject.file("local.properties")
     if (file.exists()) file.inputStream().use(::load)
@@ -51,8 +33,8 @@ android {
         applicationId = "com.gabriel.gamedrop"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.3.0"
+        versionCode = 5
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
