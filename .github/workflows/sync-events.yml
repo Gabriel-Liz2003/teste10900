@@ -4,6 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 */3 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_public_events.py'
+      - 'scripts/sync_igdb_events.py'
+      - '.github/workflows/sync-events.yml'
 
 permissions:
   contents: write
