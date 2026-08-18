@@ -1,6 +1,5 @@
 name: Sync gaming events
 
-# Secret verification trigger: 2026-08-18
 on:
   workflow_dispatch:
   schedule:
@@ -11,6 +10,7 @@ on:
       - 'scripts/sync_public_events.py'
       - 'scripts/sync_major_events.py'
       - 'scripts/sync_igdb_events.py'
+      - 'scripts/finalize_event_feed.py'
       - 'scripts/test_event_merge.py'
       - '.github/workflows/sync-events.yml'
   pull_request:
@@ -19,6 +19,7 @@ on:
       - 'scripts/sync_public_events.py'
       - 'scripts/sync_major_events.py'
       - 'scripts/sync_igdb_events.py'
+      - 'scripts/finalize_event_feed.py'
       - 'scripts/test_event_merge.py'
       - '.github/workflows/sync-events.yml'
 
@@ -40,10 +41,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/sync_public_events.py scripts/sync_major_events.py scripts/sync_igdb_events.py scripts/test_event_merge.py
+          python3 -m py_compile scripts/sync_public_events.py scripts/sync_major_events.py scripts/sync_igdb_events.py scripts/finalize_event_feed.py scripts/test_event_merge.py
           PYTHONPATH=scripts python3 scripts/test_event_merge.py
 
-      - name: Build optional IGDB feed
+      - name: Build and validate IGDB feed
+        id: igdb
         shell: bash
         env:
           IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
@@ -52,13 +54,23 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "${IGDB_CLIENT_ID}" ] && [ -n "${IGDB_CLIENT_SECRET}" ]; then
-            echo "IGDB configured: enriching the public feed."
-            python3 scripts/sync_igdb_events.py || {
-              echo "IGDB failed; public official sources will still be used."
-              rm -f data/events-feed-igdb.json
-            }
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "IGDB configured: authenticating and generating enrichment feed."
+            python3 scripts/sync_igdb_events.py
+            python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('data/events-feed-igdb.json')
+          feed = json.loads(p.read_text(encoding='utf-8'))
+          events = feed.get('events') or []
+          with_games = sum(1 for e in events if e.get('games'))
+          assert events, 'IGDB returned zero events'
+          assert with_games, 'IGDB returned zero events with games'
+          print(f'IGDB validation: events={len(events)}, withGames={with_games}')
+          PY
           else
-            echo "IGDB secrets not configured; continuing with public official sources."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "IGDB secrets are not configured; using official public sources only."
           fi
 
       - name: Sync official public event sources
@@ -67,18 +79,35 @@ jobs:
           set -euo pipefail
           python3 scripts/sync_public_events.py
           python3 scripts/sync_major_events.py
+
+      - name: Finalize and compact feed
+        shell: bash
+        env:
+          IGDB_CONFIGURED: ${{ steps.igdb.outputs.configured }}
+        run: |
+          set -euo pipefail
+          python3 scripts/finalize_event_feed.py
           python3 - <<'PY'
           import json
           from pathlib import Path
           p = Path('data/events-feed.json')
           feed = json.loads(p.read_text(encoding='utf-8'))
-          assert isinstance(feed.get('events'), list)
+          assert feed.get('events'), 'Final feed is empty'
           assert feed.get('generatedAt')
           assert feed.get('source')
-          print('Validated feed with', len(feed['events']), 'events')
-          print('IGDB-enriched events:', feed.get('igdbEnrichedEvents', 0))
-          print('Public sources:', feed.get('sourcesStatus'))
-          print('Major sources:', feed.get('sourcesStatusMajor'))
+          assert feed.get('eventCount') == len(feed['events'])
+          if feed.get('igdbConfigured'):
+              assert feed.get('igdbRawEvents', 0) > 0
+              assert feed.get('igdbRawEventsWithGames', 0) > 0
+              assert feed.get('igdbEnrichedEvents', 0) > 0
+          print('Final validation:', {
+              'eventCount': feed.get('eventCount'),
+              'igdbConfigured': feed.get('igdbConfigured'),
+              'igdbRawEvents': feed.get('igdbRawEvents'),
+              'igdbRawEventsWithGames': feed.get('igdbRawEventsWithGames'),
+              'igdbEnrichedEvents': feed.get('igdbEnrichedEvents'),
+              'bytes': p.stat().st_size,
+          })
           PY
           rm -f data/events-feed-igdb.json
 
@@ -89,8 +118,8 @@ jobs:
           NEW_COUNT=$(python3 -c "import json; print(len(json.load(open('data/events-feed.json'))['events']))")
           OLD_COUNT=$(git show HEAD:data/events-feed.json 2>/dev/null | python3 -c "import json,sys; print(len(json.load(sys.stdin).get('events', [])))" || echo 0)
           echo "Old feed: ${OLD_COUNT}; new feed: ${NEW_COUNT}"
-          if [ "${NEW_COUNT}" -eq 0 ] && [ "${OLD_COUNT}" -gt 0 ]; then
-            echo "ERROR: refusing to replace a non-empty feed with an empty one."
+          if [ "${NEW_COUNT}" -eq 0 ]; then
+            echo "ERROR: refusing to publish an empty feed."
             exit 1
           fi
 
@@ -104,7 +133,7 @@ jobs:
             exit 0
           fi
           git config user.name "github-actions[bot]"
-          git config user.email "418982582+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/events-feed.json
           git commit -m "data: refresh gaming events feed [skip ci]"
           git push
