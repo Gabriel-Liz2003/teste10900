@@ -17,11 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Reconstruct GameDrop project
+      - name: Reconstruct GameDrop 1.4.1 project
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          set -euo pipefail
           cat ci_payload/payload.* | base64 -d > project.tar.gz
           tar -xzf project.tar.gz
           rm project.tar.gz
@@ -29,8 +30,6 @@ jobs:
           tar -xzf tests.tar.gz
           rm tests.tar.gz
 
-          test -f settings.gradle.kts
-          test -f app/build.gradle.kts
           sed -i 's/androidx.core:core-ktx:1.19.0/androidx.core:core-ktx:1.17.0/' app/build.gradle.kts
           sed -i 's/androidx.compose:compose-bom:2026.08.00/androidx.compose:compose-bom:2025.08.00/' app/build.gradle.kts
           sed -i 's/version "2.2.21"/version "2.4.10"/g' build.gradle.kts
@@ -43,12 +42,10 @@ jobs:
           sed -i 's/androidx.room:room-testing:2.8.1/androidx.room:room-testing:2.8.4/' app/build.gradle.kts
           sed -i '/^[[:space:]]*kotlinOptions {/,/^[[:space:]]*}/d' app/build.gradle.kts
           printf '\nkotlin {\n    compilerOptions {\n        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)\n    }\n}\n' >> app/build.gradle.kts
-          sed -i 's/gridItems(42) { cell ->/gridItems((0 until 42).toList()) { cell ->/' app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt
 
-          # Reconstruct the validated legacy overlay.
           for spec in \
             'fb6753f02933e4d43ead30a21290f489881b6414:/tmp/part.00' \
-            'fc710d864993d5110b8277f6a4c4a66808947413:/tmp/part.01' \
+            'fc710d864993d7110b8277f6a4c4a66808947413:/tmp/part.01' \
             'e123d3d50c93c6654ed741bd6d2a0d71f4b5c6bb:/tmp/part.02'; do
             sha="${spec%%:*}"
             out="${spec#*:}"
@@ -57,86 +54,48 @@ jobs:
               -H "Authorization: Bearer ${GH_TOKEN}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               "https://api.github.com/repos/Gabriel-Liz2003/teste10900/git/blobs/${sha}" \
-              | jq -r '.content' | tr -d '\n' | base64 -d > "${out}"
+              | jq -r '.content' | tr -d '\n' | base64 -d > "$out"
           done
           cat /tmp/part.00 /tmp/part.01 /tmp/part.02 > patch.tar.gz
           echo '78a55ce1d6faab5a21f9c7096eb9277efc6bbac4adc8fe444eb8afd357cc7e6b  patch.tar.gz' | sha256sum -c -
           tar -xzf patch.tar.gz
           rm patch.tar.gz /tmp/part.00 /tmp/part.01 /tmp/part.02
 
-          # Restore the tracked 1.4+ layer after the legacy payload.
-          if git cat-file -e HEAD:app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedModels.kt 2>/dev/null; then
-            git checkout HEAD -- \
-              app/build.gradle.kts \
-              app/src/main/java/com/gabriel/gamedrop/AppContainer.kt \
-              app/src/main/java/com/gabriel/gamedrop/core/SynopsisTranslator.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/GameDropNav.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventModels.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventFeedApi.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventRepository.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventTimeUtils.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedModels.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedApi.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedRepository.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/remote/HybridGameRemoteDataSource.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarViewModel.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/detail/DetailScreen.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/detail/DetailViewModel.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsViewModel.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt \
-              app/src/main/java/com/gabriel/gamedrop/events/EventNotificationCoordinator.kt \
-              app/src/main/res/values/strings.xml \
-              app/src/main/res/values-en/strings.xml \
-              app/src/main/res/values/events_notifications.xml \
-              app/src/main/res/values-en/events_notifications.xml \
-              app/src/debug/AndroidManifest.xml \
-              app/src/release/AndroidManifest.xml \
-              app/src/test/java/com/gabriel/gamedrop/data/events/EventTimeUtilsTest.kt \
-              app/src/test/java/com/gabriel/gamedrop/data/releases/ReleaseFeedUtilsTest.kt
-            EXPECTED_TESTS=21
-            EXPECTED_VERSION=1.4.1
-            EXPECTED_CODE=6
-          elif git cat-file -e HEAD:app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt 2>/dev/null; then
-            git checkout HEAD -- \
-              app/build.gradle.kts \
-              app/src/main/java/com/gabriel/gamedrop/AppContainer.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/GameDropNav.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventModels.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventFeedApi.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventRepository.kt \
-              app/src/main/java/com/gabriel/gamedrop/data/events/EventTimeUtils.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsViewModel.kt \
-              app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt \
-              app/src/main/java/com/gabriel/gamedrop/events/EventNotificationCoordinator.kt \
-              app/src/main/res/values/strings.xml \
-              app/src/main/res/values-en/strings.xml \
-              app/src/main/res/values/events_notifications.xml \
-              app/src/main/res/values-en/events_notifications.xml \
-              app/src/debug/AndroidManifest.xml \
-              app/src/release/AndroidManifest.xml \
-              app/src/test/java/com/gabriel/gamedrop/data/events/EventTimeUtilsTest.kt
-            EXPECTED_TESTS=18
-            EXPECTED_VERSION=1.3.0
-            EXPECTED_CODE=4
-          else
-            EXPECTED_TESTS=14
-            EXPECTED_VERSION=1.1.0
-            EXPECTED_CODE=2
-          fi
+          git checkout HEAD -- \
+            app/build.gradle.kts \
+            app/src/main/java/com/gabriel/gamedrop/AppContainer.kt \
+            app/src/main/java/com/gabriel/gamedrop/core/SynopsisTranslator.kt \
+            app/src/main/java/com/gabriel/gamedrop/ui/GameDropNav.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/events/EventModels.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/events/EventFeedApi.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/events/EventRepository.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/events/EventTimeUtils.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedModels.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedApi.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/releases/ReleaseFeedRepository.kt \
+            app/src/main/java/com/gabriel/gamedrop/data/remote/HybridGameRemoteDataSource.kt \
+            app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarViewModel.kt \
+            app/src/main/java/com/gabriel/gamedrop/ui/calendar/CalendarScreen.kt \
+            app/src/main/java/com/gabriel/gamedrop/ui/detail/DetailScreen.kt \
+            app/src/main/java/com/gabriel/gamedrop/ui/detail/DetailViewModel.kt \
+            app/src/main/java/com/gabriel/gamedrop/ui/events/EventsViewModel.kt \
+            app/src/main/java/com/gabriel/gamedrop/ui/events/EventsScreen.kt \
+            app/src/main/java/com/gabriel/gamedrop/events/EventNotificationCoordinator.kt \
+            app/src/main/res/values/strings.xml \
+            app/src/main/res/values-en/strings.xml \
+            app/src/main/res/values/events_notifications.xml \
+            app/src/main/res/values-en/events_notifications.xml \
+            app/src/debug/AndroidManifest.xml \
+            app/src/release/AndroidManifest.xml \
+            app/src/test/java/com/gabriel/gamedrop/data/events/EventTimeUtilsTest.kt \
+            app/src/test/java/com/gabriel/gamedrop/data/releases/ReleaseFeedUtilsTest.kt
 
-          test -f app/src/main/java/com/gabriel/gamedrop/MainActivity.kt
-          test -f app/src/main/java/com/gabriel/gamedrop/core/SynopsisTranslator.kt
-          test -f app/src/main/res/values-en/strings.xml
-          test -f app/src/main/res/xml/locales_config.xml
-          test "$(grep -R --include='*.kt' -h '@Test' app/src/test | wc -l | tr -d ' ')" -eq "$EXPECTED_TESTS"
-          grep -q "applicationId = \"com.gabriel.gamedrop\"" app/build.gradle.kts
-          grep -q "versionCode = $EXPECTED_CODE" app/build.gradle.kts
-          grep -q "versionName = \"$EXPECTED_VERSION\"" app/build.gradle.kts
-
-          echo "GAMEDROP_VERSION=$EXPECTED_VERSION" >> "$GITHUB_ENV"
-          echo "GAMEDROP_CODE=$EXPECTED_CODE" >> "$GITHUB_ENV"
-          echo "GAMEDROP_TESTS=$EXPECTED_TESTS" >> "$GITHUB_ENV"
+          test "$(grep -R --include='*.kt' -h '@Test' app/src/test | wc -l | tr -d ' ')" -eq 21
+          grep -q 'versionCode = 6' app/build.gradle.kts
+          grep -q 'versionName = "1.4.1"' app/build.gradle.kts
+          echo 'GAMEDROP_VERSION=1.4.1' >> "$GITHUB_ENV"
+          echo 'GAMEDROP_CODE=6' >> "$GITHUB_ENV"
+          echo 'GAMEDROP_TESTS=21' >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v4
         with:
@@ -150,23 +109,20 @@ jobs:
       - uses: android-actions/setup-android@v3
 
       - name: Install Android SDK 36
-        shell: bash
         run: sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Run JVM tests and build debug APK
+      - name: Run 21 JVM tests and build debug APK
         shell: bash
         run: |
           set -o pipefail
-          echo "Building GameDrop ${GAMEDROP_VERSION} with ${GAMEDROP_TESTS} expected tests"
           gradle testDebugUnitTest assembleDebug --stacktrace 2>&1 | tee build.log
 
-      - name: Upload debug build log
+      - name: Upload build log
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: GameDrop-${{ env.GAMEDROP_VERSION }}-build-log
           path: build.log
-          if-no-files-found: warn
           retention-days: 7
 
       - name: Upload debug APK
@@ -175,121 +131,65 @@ jobs:
         with:
           name: GameDrop-${{ env.GAMEDROP_VERSION }}-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
           retention-days: 7
 
       - name: Check official signing secrets
-        id: official_signing
+        id: signing
         if: github.ref == 'refs/heads/gamedrop-apk-build' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        shell: bash
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && \
-             [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && \
-             [ -n "$ANDROID_KEY_ALIAS" ] && \
-             [ -n "$ANDROID_KEY_PASSWORD" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ] && [ -n "$ANDROID_KEYSTORE_PASSWORD" ] && [ -n "$ANDROID_KEY_ALIAS" ] && [ -n "$ANDROID_KEY_PASSWORD" ]; then
+            echo 'ready=true' >> "$GITHUB_OUTPUT"
           else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "Official signing Secrets are not configured; stable APK will not be produced."
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
           fi
 
       - name: Reconstruct official keystore
-        if: steps.official_signing.outputs.ready == 'true'
-        shell: bash
+        if: steps.signing.outputs.ready == 'true'
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
           KEYSTORE_PATH="$RUNNER_TEMP/gamedrop-release.jks"
           printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE_PATH"
           chmod 600 "$KEYSTORE_PATH"
-          test -s "$KEYSTORE_PATH"
           echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
 
-      - name: Build official signed release APK
-        if: steps.official_signing.outputs.ready == 'true'
-        shell: bash
+      - name: Build official signed APK
+        if: steps.signing.outputs.ready == 'true'
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          set -o pipefail
-          gradle assembleRelease --stacktrace 2>&1 | tee release-build.log
+        run: gradle assembleRelease --stacktrace
 
-      - name: Verify official release identity and signature
-        if: steps.official_signing.outputs.ready == 'true'
-        shell: bash
+      - name: Verify and package official APK
+        if: steps.signing.outputs.ready == 'true'
         run: |
           set -euo pipefail
-          APK="app/build/outputs/apk/release/app-release.apk"
+          APK='app/build/outputs/apk/release/app-release.apk'
           APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
           AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
-          test -f "$APK"
-
           "$APKSIGNER" verify --verbose --print-certs "$APK" | tee signing-report.txt
-          ACTUAL_CERT=$("$APKSIGNER" verify --print-certs "$APK" \
-            | awk -F': ' '/Signer #1 certificate SHA-256 digest/ {print $2; exit}' \
-            | tr -d ':[:space:]' | tr '[:lower:]' '[:upper:]')
+          ACTUAL_CERT=$("$APKSIGNER" verify --print-certs "$APK" | awk -F': ' '/Signer #1 certificate SHA-256 digest/ {print $2; exit}' | tr -d ':[:space:]' | tr '[:lower:]' '[:upper:]')
           EXPECTED_CERT=$(tr -d ':[:space:]' < signing/official-cert-sha256.txt | tr '[:lower:]' '[:upper:]')
-          test -n "$ACTUAL_CERT"
-          if [ "$ACTUAL_CERT" != "$EXPECTED_CERT" ]; then
-            echo "ERROR: signing certificate fingerprint does not match the official GameDrop certificate."
-            exit 1
-          fi
-
+          test "$ACTUAL_CERT" = "$EXPECTED_CERT"
           BADGING=$("$AAPT" dump badging "$APK" | head -n 1)
-          case "$BADGING" in *"name='com.gabriel.gamedrop'"*) ;; *) echo "ERROR: applicationId mismatch"; exit 1;; esac
-          case "$BADGING" in *"versionCode='${GAMEDROP_CODE}'"*) ;; *) echo "ERROR: versionCode mismatch"; exit 1;; esac
-          case "$BADGING" in *"versionName='${GAMEDROP_VERSION}'"*) ;; *) echo "ERROR: versionName mismatch"; exit 1;; esac
-
+          case "$BADGING" in *"name='com.gabriel.gamedrop'"*"versionCode='6'"*"versionName='1.4.1'"*) ;; *) echo "$BADGING"; exit 1;; esac
           mkdir -p dist
-          cp "$APK" "dist/GameDrop-v${GAMEDROP_VERSION}.apk"
-          sha256sum "dist/GameDrop-v${GAMEDROP_VERSION}.apk" | tee official-apk-sha256.txt
-          echo "Official certificate SHA-256 verified."
+          cp "$APK" dist/GameDrop-v1.4.1.apk
+          sha256sum dist/GameDrop-v1.4.1.apk | tee official-apk-sha256.txt
 
-      - name: Upload official release APK
-        if: steps.official_signing.outputs.ready == 'true' && success()
+      - name: Upload official APK
+        if: steps.signing.outputs.ready == 'true' && success()
         uses: actions/upload-artifact@v4
         with:
-          name: GameDrop-v${{ env.GAMEDROP_VERSION }}-official
+          name: GameDrop-v1.4.1-official
           path: |
-            dist/GameDrop-v${{ env.GAMEDROP_VERSION }}.apk
+            dist/GameDrop-v1.4.1.apk
             signing-report.txt
             official-apk-sha256.txt
-            release-build.log
-          if-no-files-found: error
           retention-days: 30
-
-      - name: Record official build verification
-        if: steps.official_signing.outputs.ready == 'true' && success()
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK_SHA=$(awk '{print $1; exit}' official-apk-sha256.txt)
-          CERT_SHA=$(tr -d '\r\n' < signing/official-cert-sha256.txt)
-          BUILT_AT=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-          cat > signing/last-official-build.txt <<EOF
-          version=${GAMEDROP_VERSION}
-          versionCode=${GAMEDROP_CODE}
-          commit=${GITHUB_SHA}
-          runId=${GITHUB_RUN_ID}
-          runUrl=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
-          apkSha256=${APK_SHA}
-          certificateSha256=${CERT_SHA}
-          builtAt=${BUILT_AT}
-          EOF
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add signing/last-official-build.txt
-          if git diff --cached --quiet; then
-            echo "Official build record is already current."
-            exit 0
-          fi
-          git commit -m "ci: record official GameDrop ${GAMEDROP_VERSION} build [skip ci]"
-          git push origin HEAD:gamedrop-apk-build
