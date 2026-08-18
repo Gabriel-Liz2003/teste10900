@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-18T20:59:56.891535Z",
+  "generatedAt": "2026-08-18T21:01:33.001519Z",
   "source": "GameDrop aggregator: official public sources + IGDB when configured",
   "sourcesStatus": [
     "Summer Game Fest:18",
@@ -298,10 +298,22 @@
       "logoUrl": null,
       "games": [],
       "videos": []
+    },
+    {
+      "id": 190716871637295,
+      "name": "The Game Awards 2026",
+      "description": "Premiação anual com anúncios, trailers e world premieres.",
+      "startTime": "2026-12-11T00:30:00Z",
+      "endTime": null,
+      "timeZone": "America/New_York",
+      "liveStreamUrl": "https://thegameawards.com/faq",
+      "logoUrl": null,
+      "games": [],
+      "videos": []
     }
   ],
   "sourcesStatusMajor": [
     "gamescom:0",
-    "The Game Awards:0"
+    "The Game Awards:1"
   ]
 }
