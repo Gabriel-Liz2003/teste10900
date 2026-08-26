@@ -1,0 +1,100 @@
+name: Sync release calendar
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7 */6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sync_igdb_releases.py'
+      - 'scripts/shard_release_feed.py'
+      - '.github/workflows/sync-release-calendar.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/sync_igdb_releases.py'
+      - 'scripts/shard_release_feed.py'
+      - '.github/workflows/sync-release-calendar.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: gamedrop-main-generated-data
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build and shard IGDB release calendar
+        shell: bash
+        env:
+          IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
+          IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
+          RELEASE_FEED_OUT: data/releases-feed.json
+        run: |
+          set -euo pipefail
+          test -n "${IGDB_CLIENT_ID}" || { echo 'IGDB_CLIENT_ID is not configured'; exit 1; }
+          test -n "${IGDB_CLIENT_SECRET}" || { echo 'IGDB_CLIENT_SECRET is not configured'; exit 1; }
+          python3 -m py_compile scripts/sync_igdb_releases.py scripts/shard_release_feed.py
+          python3 scripts/sync_igdb_releases.py
+          python3 scripts/shard_release_feed.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          index_path = Path('data/releases/index.json')
+          index = json.loads(index_path.read_text(encoding='utf-8'))
+          months = index.get('months') or []
+          assert months, 'Release shard index has no months'
+          assert index.get('gameCount', 0) > 0
+          assert index.get('gamesWithTrailers', 0) > 0
+          largest = max(item.get('bytes', 0) for item in months)
+          assert largest < 3_000_000, f'Release shard too large: {largest} bytes'
+          for item in months:
+              shard = Path('data/releases') / f"{item['month']}.json"
+              assert shard.exists(), f'Missing release shard: {shard}'
+              payload = json.loads(shard.read_text(encoding='utf-8'))
+              assert payload.get('gameCount') == len(payload.get('games') or [])
+          assert not Path('data/releases-feed.json').exists(), 'Monolithic release feed should be removed after sharding'
+          print('Release calendar validation:', {
+              'games': index.get('gameCount'),
+              'withTrailers': index.get('gamesWithTrailers'),
+              'months': len(months),
+              'largestShardBytes': largest,
+              'indexBytes': index_path.stat().st_size,
+          })
+          PY
+
+      - name: Publish release calendar with conflict retry
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/releases data/releases-feed.json
+          git reset -- data/releases/popularity.json || true
+          if git diff --cached --quiet; then
+            echo "No release calendar changes."
+            exit 0
+          fi
+          git commit -m "data: refresh release calendar [skip ci]"
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:main; then
+              echo "Release calendar published."
+              exit 0
+            fi
+            echo "Push raced with another feed writer; rebasing (attempt ${attempt}/4)."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 2))
+          done
+          echo "ERROR: could not publish release calendar after retries."
+          exit 1

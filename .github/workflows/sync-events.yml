@@ -1,4 +1,4 @@
-name: Sync gaming events and releases
+name: Sync gaming events
 
 on:
   workflow_dispatch:
@@ -10,8 +10,6 @@ on:
       - 'scripts/sync_public_events.py'
       - 'scripts/sync_major_events.py'
       - 'scripts/sync_igdb_events.py'
-      - 'scripts/sync_igdb_releases.py'
-      - 'scripts/shard_release_feed.py'
       - 'scripts/finalize_event_feed.py'
       - 'scripts/test_event_merge.py'
       - '.github/workflows/sync-events.yml'
@@ -21,8 +19,6 @@ on:
       - 'scripts/sync_public_events.py'
       - 'scripts/sync_major_events.py'
       - 'scripts/sync_igdb_events.py'
-      - 'scripts/sync_igdb_releases.py'
-      - 'scripts/shard_release_feed.py'
       - 'scripts/finalize_event_feed.py'
       - 'scripts/test_event_merge.py'
       - '.github/workflows/sync-events.yml'
@@ -31,17 +27,19 @@ permissions:
   contents: write
 
 concurrency:
-  group: gamedrop-content-feeds-${{ github.ref }}
+  group: gamedrop-main-generated-data
   cancel-in-progress: false
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Validate feed code
+      - name: Validate event feed code
         shell: bash
         run: |
           set -euo pipefail
@@ -49,8 +47,6 @@ jobs:
             scripts/sync_public_events.py \
             scripts/sync_major_events.py \
             scripts/sync_igdb_events.py \
-            scripts/sync_igdb_releases.py \
-            scripts/shard_release_feed.py \
             scripts/finalize_event_feed.py \
             scripts/test_event_merge.py
           PYTHONPATH=scripts python3 scripts/test_event_merge.py
@@ -62,9 +58,13 @@ jobs:
           IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
           IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
           EVENT_FEED_OUT: data/events-feed-igdb.json
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          if [ -n "${IGDB_CLIENT_ID}" ] && [ -n "${IGDB_CLIENT_SECRET}" ]; then
+          if [ "${EVENT_NAME}" = "pull_request" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "PR validation: skipping live IGDB authentication; merge logic is covered by test_event_merge.py."
+          elif [ -n "${IGDB_CLIENT_ID}" ] && [ -n "${IGDB_CLIENT_SECRET}" ]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
             echo "IGDB configured: authenticating and generating event enrichment feed."
             python3 scripts/sync_igdb_events.py
@@ -84,43 +84,6 @@ jobs:
             echo "IGDB secrets are not configured; public event feed will use its fallbacks."
           fi
 
-      - name: Build and shard IGDB release calendar feed
-        if: steps.igdb.outputs.configured == 'true'
-        shell: bash
-        env:
-          IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
-          IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
-          RELEASE_FEED_OUT: data/releases-feed.json
-        run: |
-          set -euo pipefail
-          python3 scripts/sync_igdb_releases.py
-          python3 scripts/shard_release_feed.py
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          index_path = Path('data/releases/index.json')
-          index = json.loads(index_path.read_text(encoding='utf-8'))
-          months = index.get('months') or []
-          assert months, 'Release shard index has no months'
-          assert index.get('gameCount', 0) > 0
-          assert index.get('gamesWithTrailers', 0) > 0
-          largest = max(item.get('bytes', 0) for item in months)
-          assert largest < 3_000_000, f'Release shard too large: {largest} bytes'
-          for item in months:
-              shard = Path('data/releases') / f"{item['month']}.json"
-              assert shard.exists(), f'Missing release shard: {shard}'
-              payload = json.loads(shard.read_text(encoding='utf-8'))
-              assert payload.get('gameCount') == len(payload.get('games') or [])
-          assert not Path('data/releases-feed.json').exists(), 'Monolithic release feed should be removed after sharding'
-          print('Release shard validation:', {
-              'games': index.get('gameCount'),
-              'withTrailers': index.get('gamesWithTrailers'),
-              'months': len(months),
-              'largestShardBytes': largest,
-              'indexBytes': index_path.stat().st_size,
-          })
-          PY
-
       - name: Sync official public event sources
         shell: bash
         run: |
@@ -128,7 +91,7 @@ jobs:
           python3 scripts/sync_public_events.py
           python3 scripts/sync_major_events.py
 
-      - name: Finalize and compact event feed
+      - name: Finalize and validate event feed
         shell: bash
         env:
           IGDB_CONFIGURED: ${{ steps.igdb.outputs.configured }}
@@ -140,10 +103,11 @@ jobs:
           from pathlib import Path
           p = Path('data/events-feed.json')
           feed = json.loads(p.read_text(encoding='utf-8'))
-          assert feed.get('events'), 'Final event feed is empty'
+          events = feed.get('events') or []
+          assert events, 'Final event feed is empty'
           assert feed.get('generatedAt')
           assert feed.get('source')
-          assert feed.get('eventCount') == len(feed['events'])
+          assert feed.get('eventCount') == len(events)
           if feed.get('igdbConfigured'):
               assert feed.get('igdbRawEvents', 0) > 0
               assert feed.get('igdbRawEventsWithGames', 0) > 0
@@ -153,25 +117,16 @@ jobs:
               'igdbEnrichedEvents': feed.get('igdbEnrichedEvents'),
               'bytes': p.stat().st_size,
           })
+          print('Recent gamescom/Xbox showcase audit:')
+          for event in events:
+              name = (event.get('name') or '').lower()
+              start = event.get('startAt') or event.get('startTime') or ''
+              if ('gamescom' in name or 'xbox' in name) and start.startswith('2026-08'):
+                  print(f"- {event.get('name')}: games={len(event.get('games') or [])}, videos={len(event.get('videos') or [])}")
           PY
           rm -f data/events-feed-igdb.json
 
-      - name: Guard against accidental empty feeds
-        shell: bash
-        run: |
-          set -euo pipefail
-          EVENT_COUNT=$(python3 -c "import json; print(len(json.load(open('data/events-feed.json')).get('events', [])))")
-          RELEASE_COUNT=$(python3 -c "import json; print(json.load(open('data/releases/index.json')).get('gameCount', 0))")
-          if [ "${EVENT_COUNT}" -eq 0 ]; then
-            echo "ERROR: refusing to publish an empty event feed."
-            exit 1
-          fi
-          if [ "${RELEASE_COUNT}" -eq 0 ]; then
-            echo "ERROR: refusing to publish an empty release index."
-            exit 1
-          fi
-
-      - name: Commit refreshed feeds
+      - name: Publish event feed with conflict retry
         if: github.event_name != 'pull_request'
         shell: bash
         run: |
@@ -179,10 +134,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/events-feed.json
-          git add -A data/releases data/releases-feed.json
           if git diff --cached --quiet; then
-            echo "No feed changes."
+            echo "No event feed changes."
             exit 0
           fi
-          git commit -m "data: refresh GameDrop content feeds [skip ci]"
-          git push
+          git commit -m "data: refresh gaming events [skip ci]"
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:main; then
+              echo "Event feed published."
+              exit 0
+            fi
+            echo "Push raced with another feed writer; rebasing (attempt ${attempt}/4)."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 2))
+          done
+          echo "ERROR: could not publish event feed after retries."
+          exit 1
