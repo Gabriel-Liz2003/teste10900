@@ -21,7 +21,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: gamedrop-release-calendar-${{ github.ref }}
+  group: gamedrop-main-generated-data
   cancel-in-progress: false
 
 jobs:
@@ -30,6 +30,8 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Build and shard IGDB release calendar
         shell: bash
