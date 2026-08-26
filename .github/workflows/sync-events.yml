@@ -27,7 +27,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: gamedrop-events-${{ github.ref }}
+  group: gamedrop-main-generated-data
   cancel-in-progress: false
 
 jobs:
@@ -36,6 +36,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate event feed code
         shell: bash
