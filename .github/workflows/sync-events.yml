@@ -58,9 +58,13 @@ jobs:
           IGDB_CLIENT_ID: ${{ secrets.IGDB_CLIENT_ID }}
           IGDB_CLIENT_SECRET: ${{ secrets.IGDB_CLIENT_SECRET }}
           EVENT_FEED_OUT: data/events-feed-igdb.json
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
-          if [ -n "${IGDB_CLIENT_ID}" ] && [ -n "${IGDB_CLIENT_SECRET}" ]; then
+          if [ "${EVENT_NAME}" = "pull_request" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "PR validation: skipping live IGDB authentication; merge logic is covered by test_event_merge.py."
+          elif [ -n "${IGDB_CLIENT_ID}" ] && [ -n "${IGDB_CLIENT_SECRET}" ]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
             echo "IGDB configured: authenticating and generating event enrichment feed."
             python3 scripts/sync_igdb_events.py
