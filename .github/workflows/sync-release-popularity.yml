@@ -42,7 +42,7 @@ jobs:
           print('Top popularity sample:', top)
           print('Popularity bytes:', p.stat().st_size)
           PY
-      - name: Commit popularity feed
+      - name: Publish popularity feed with conflict retry
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
@@ -53,4 +53,15 @@ jobs:
             exit 0
           fi
           git commit -m "data: refresh release popularity [skip ci]"
-          git push
+          for attempt in 1 2 3 4; do
+            if git push origin HEAD:main; then
+              echo "Popularity feed published."
+              exit 0
+            fi
+            echo "Push raced with another feed writer; rebasing (attempt ${attempt}/4)."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((attempt * 2))
+          done
+          echo "ERROR: could not publish popularity feed after retries."
+          exit 1
